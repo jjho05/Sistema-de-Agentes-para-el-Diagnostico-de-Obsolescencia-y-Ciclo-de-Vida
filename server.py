@@ -13,6 +13,7 @@ from pydantic import BaseModel
 import google.generativeai as genai
 import chromadb
 from sentence_transformers import SentenceTransformer
+import pandas as pd
 
 app = FastAPI(title="SADOC - Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida", version="4.0")
 
@@ -549,10 +550,51 @@ async def download_trials():
     if os.path.exists(history_file):
         return FileResponse(history_file, media_type="application/json", filename="SADOC_Classified_Trials.json")
     else:
-        # Si no existe, crear un archivo vacío
         with open(history_file, "w", encoding="utf-8") as f:
             json.dump([], f)
         return FileResponse(history_file, media_type="application/json", filename="SADOC_Classified_Trials.json")
+
+@app.get("/api/download/standard/excel")
+async def download_standard_excel():
+    json_path = os.path.join("data", "fused_dataset.json")
+    excel_path = os.path.join("data", "SADOC_Standard_Dataset.xlsx")
+    
+    if not os.path.exists(json_path):
+        raise HTTPException(status_code=404, detail="Dataset estándar no encontrado.")
+        
+    try:
+        df = pd.read_json(json_path)
+        if "tools_required" in df.columns:
+            df["tools_required"] = df["tools_required"].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
+            
+        df.to_excel(excel_path, index=False, sheet_name="BOM Estándar Consolidado")
+        return FileResponse(excel_path, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename="SADOC_Standard_Dataset.xlsx")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al generar archivo de Excel: {str(e)}")
+
+@app.get("/api/download/trials/excel")
+async def download_trials_excel():
+    excel_path = os.path.join("data", "SADOC_Classified_Trials.xlsx")
+    
+    try:
+        if not analysis_history:
+            df = pd.DataFrame(columns=["id", "timestamp", "productName", "estimatedLifespan", "weakestLink", "reparabilityScore", "carbonFootprint", "summary"])
+            df.to_excel(excel_path, index=False, sheet_name="Historial de Ensayos")
+            return FileResponse(excel_path, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename="SADOC_Classified_Trials.xlsx")
+            
+        df = pd.DataFrame(analysis_history)
+        if "imageData" in df.columns:
+            df = df.drop(columns=["imageData"])
+            
+        if "reparabilityIndex" in df.columns:
+            df["reparabilityScore"] = df["reparabilityIndex"].apply(lambda x: x.get("score") if isinstance(x, dict) else None)
+            df["reparabilityLabel"] = df["reparabilityIndex"].apply(lambda x: x.get("label") if isinstance(x, dict) else None)
+            df = df.drop(columns=["reparabilityIndex"])
+            
+        df.to_excel(excel_path, index=False, sheet_name="Historial de Ensayos")
+        return FileResponse(excel_path, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename="SADOC_Classified_Trials.xlsx")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al generar archivo de Excel: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

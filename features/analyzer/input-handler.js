@@ -415,15 +415,25 @@ function renderSearchResults(matches) {
  */
 function setupRepositoryTab() {
     const downloadStandardBtn = document.getElementById('download-standard-btn');
+    const downloadStandardExcelBtn = document.getElementById('download-standard-excel-btn');
     const downloadTrialsBtn = document.getElementById('download-trials-btn');
+    const downloadTrialsExcelBtn = document.getElementById('download-trials-excel-btn');
     const baseUrl = window.location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
 
     downloadStandardBtn?.addEventListener('click', () => {
         window.open(`${baseUrl}/api/download/standard`, '_blank');
     });
 
+    downloadStandardExcelBtn?.addEventListener('click', () => {
+        window.open(`${baseUrl}/api/download/standard/excel`, '_blank');
+    });
+
     downloadTrialsBtn?.addEventListener('click', () => {
         window.open(`${baseUrl}/api/download/trials`, '_blank');
+    });
+
+    downloadTrialsExcelBtn?.addEventListener('click', () => {
+        window.open(`${baseUrl}/api/download/trials/excel`, '_blank');
     });
 }
 
