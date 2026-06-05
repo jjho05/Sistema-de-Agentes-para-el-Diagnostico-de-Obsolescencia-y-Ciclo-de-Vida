@@ -13,7 +13,7 @@ let currentImageData = null;
 export function initializeApp() {
     // Inicializar API Key
     const apiKey = initializeAPIKey();
-    if (!apiKey) {
+    if (!apiKey && window.location.protocol === 'file:') {
         showToast('API Key no configurada. Revisa config.local.js', 'error', 'Configuración Faltante');
     }
     
