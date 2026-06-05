@@ -1,0 +1,47 @@
+# API Keys y configuración sensible
+.env
+.env.local
+config.local.js
+!config.local.example.js
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos temporales
+*.tmp
+.cache/
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Ignorar base de datos vectorial local (se compila en el build de Docker)
+data/vector_db/
+
+# Ignorar datasets crudos pesados (>10MB) que no se requieren en producción
+MyFixit-Dataset-master/
+raw_data/
+
+# Ignorar archivos binarios locales de usuario que Hugging Face rechaza
+*.docx
+*.xlsx
+*.zip
+*.bin
+*.sqlite3
+*.pickle

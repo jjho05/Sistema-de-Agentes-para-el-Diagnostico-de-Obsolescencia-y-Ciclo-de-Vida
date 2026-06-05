@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SADOC - Diagnóstico de Obsolescencia y Ciclo de Vida</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/main.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">🔬 SADOC</h1>
+                <p class="subtitle">Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Input Section -->
+            <section class="card input-section">
+                <h2 class="section-title">Ingreso de Producto</h2>
+
+                <!-- Tabs para modo de entrada -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="text">📝 Texto</button>
+                    <button class="tab-btn" data-tab="image">🖼️ Imagen</button>
+                    <button class="tab-btn" data-tab="hybrid">🔀 Híbrido</button>
+                    <button class="tab-btn" data-tab="search">🔍 Base de Datos</button>
+                </div>
+
+                <!-- Tab Content: Texto -->
+                <div class="tab-content active" id="text-tab">
+                    <div class="form-group">
+                        <label for="product-name">Nombre del Producto</label>
+                        <input type="text" id="product-name" placeholder="Ej: Lavadora Samsung WF45R6100AC"
+                            class="input-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-description">Descripción Técnica (Opcional)</label>
+                        <textarea id="product-description" rows="4"
+                            placeholder="Ej: Motor de inducción, carcasa de acero galvanizado, capacidad 18kg..."
+                            class="textarea-field"></textarea>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Imagen -->
+                <div class="tab-content" id="image-tab">
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-placeholder">
+                            <span class="upload-icon">📷</span>
+                            <p>Arrastra una imagen o haz click para seleccionar</p>
+                            <input type="file" id="image-input" accept="image/*" hidden>
+                        </div>
+                        <div class="preview-container" id="preview-container" style="display: none;">
+                            <img id="image-preview" alt="Vista previa">
+                            <button class="remove-btn" id="remove-image">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Híbrido -->
+                <div class="tab-content" id="hybrid-tab">
+                    <div class="form-group">
+                        <label for="hybrid-product-name">Nombre del Producto</label>
+                        <input type="text" id="hybrid-product-name" placeholder="Ej: Lavadora Samsung WF45R6100AC"
+                            class="input-field">
+                    </div>
+                    <div class="upload-area upload-area-small" id="hybrid-upload-area">
+                        <div class="upload-placeholder">
+                            <span class="upload-icon">📷</span>
+                            <p>Imagen del producto (opcional)</p>
+                            <input type="file" id="hybrid-image-input" accept="image/*" hidden>
+                        </div>
+                        <div class="preview-container" id="hybrid-preview-container" style="display: none;">
+                            <img id="hybrid-image-preview" alt="Vista previa">
+                            <button class="remove-btn" id="hybrid-remove-image">✕</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="hybrid-description">Descripción Adicional (Opcional)</label>
+                        <textarea id="hybrid-description" rows="3" placeholder="Agrega contexto adicional..."
+                            class="textarea-field"></textarea>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Buscador Científico -->
+                <div class="tab-content" id="search-tab">
+                    <div class="form-group">
+                        <label for="search-query" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Buscar Componente o Producto Científico</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="search-query" placeholder="Ej: iPhone, Laptop, Batería, Cobre, Lithium..." class="input-field" style="flex: 1; margin-bottom: 0;">
+                            <button id="search-db-btn" class="btn btn-primary" style="padding: 0 1.5rem; margin-top: 0; min-width: 120px; height: 42px;">🔍 Buscar</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Resultados de búsqueda -->
+                    <div id="search-results-container" style="margin-top: 1.5rem; display: none;">
+                        <h3 class="subsection-title" style="font-size: 1.1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Resultados en Base de Datos (Babbitt et al. & iFixit)</h3>
+                        <div id="search-results-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
+                            <!-- Tarjetas de búsqueda pobladas dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón de Análisis -->
+                <div class="action-section">
+                    <button id="analyze-btn" class="btn btn-primary">
+                        <span class="btn-text">🚀 Analizar Producto</span>
+                        <span class="btn-loader" style="display: none;">
+                            <span class="spinner"></span> Analizando...
+                        </span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="card results-section" id="results-section" style="display: none;">
+                <h2 class="section-title">Resultados del Análisis Forense</h2>
+
+                <!-- Resumen Ejecutivo -->
+                <div class="summary-card">
+                    <div class="summary-header">
+                        <h3 id="product-title">Producto Analizado</h3>
+                        <div class="lifespan-badge">
+                            <span class="lifespan-label">Vida Útil Estimada</span>
+                            <span class="lifespan-value" id="lifespan-value">0 años</span>
+                        </div>
+                    </div>
+                    <div class="weakest-link">
+                        <span class="weakest-label">⚠️ Eslabón Más Débil:</span>
+                        <span class="weakest-value" id="weakest-link">-</span>
+                    </div>
+                    <div class="consensus-box" id="consensus-box">
+                        <span class="consensus-label">⚖️ Debate Multi-Agente:</span>
+                        <p class="consensus-text" id="consensus-log">-</p>
+                    </div>
+                    <p class="summary-text" id="summary-text"></p>
+                </div>
+
+                <!-- Reparabilidad EN 45554 -->
+                <div class="reparability-premium-card">
+                    <div class="reparability-header">
+                        <h3>Índice de Reparabilidad (EN 45554)</h3>
+                        <div class="reparability-score-circle">
+                            <span id="reparability-score">0</span>
+                            <small>/10</small>
+                        </div>
+                    </div>
+                    <div class="reparability-details">
+                        <p id="reparability-label" class="reparability-label">Cargando...</p>
+                        <p id="reparability-math" class="reparability-math"></p>
+                    </div>
+                </div>
+
+                <!-- Matriz RIAM -->
+                <div class="riam-section">
+                    <h3 class="subsection-title">📊 Matriz de Evaluación RIAM</h3>
+                    <div class="riam-grid">
+                        <div class="riam-item" id="riam-pc">
+                            <h4>Físico/Químico (PC)</h4>
+                            <div class="riam-score">-</div>
+                            <p class="riam-reason"></p>
+                        </div>
+                        <div class="riam-item" id="riam-be">
+                            <h4>Biológico/Ecológico (BE)</h4>
+                            <div class="riam-score">-</div>
+                            <p class="riam-reason"></p>
+                        </div>
+                        <div class="riam-item" id="riam-sc">
+                            <h4>Social/Cultural (SC)</h4>
+                            <div class="riam-score">-</div>
+                            <p class="riam-reason"></p>
+                        </div>
+                        <div class="riam-item" id="riam-eo">
+                            <h4>Económico/Operacional (EO)</h4>
+                            <div class="riam-score">-</div>
+                            <p class="riam-reason"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Componentes -->
+                <div class="components-section">
+                    <h3 class="subsection-title">Desglose de Componentes</h3>
+                    <div class="table-container">
+                        <table class="components-table">
+                            <thead>
+                                <tr>
+                                    <th>Componente</th>
+                                    <th>Material</th>
+                                    <th>Vida Útil</th>
+                                    <th>Modo de Fallo</th>
+                                    <th>Reparabilidad</th>
+                                    <th>Impacto Amb.</th>
+                                    <th>Normativa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="components-tbody">
+                                <!-- Poblado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Vida Útil -->
+                <div class="chart-section">
+                    <h3 class="subsection-title">Comparación de Vida Útil</h3>
+                    <canvas id="lifespan-chart"></canvas>
+                </div>
+
+                <!-- Verificabilidad y Fuentes -->
+                <div class="sources-section">
+                    <h3 class="subsection-title">🔍 Verificabilidad y Fuentes</h3>
+                    <div class="confidence-badge"
+                        style="margin-bottom: 1rem; padding: 0.5rem; background: var(--surface-color); border-radius: var(--border-radius); display: inline-flex; gap: 0.5rem; align-items: center;">
+                        <span class="confidence-label" style="font-weight: 600;">Nivel de Confianza:</span>
+                        <span class="confidence-value" id="confidence-value" style="font-weight: bold;">-</span>
+                    </div>
+                    <ul id="sources-list" class="sources-list" style="margin-top: 0;">
+                        <!-- Poblado dinámicamente -->
+                    </ul>
+                </div>
+
+                <!-- Recomendaciones -->
+                <div class="recommendations-section">
+                    <h3 class="subsection-title">💡 Recomendaciones de Ecodiseño</h3>
+                    <ul id="recommendations-list" class="recommendations-list">
+                        <!-- Poblado dinámicamente -->
+                    </ul>
+                </div>
+
+                <!-- Botón de Exportación -->
+                <div class="action-section">
+                    <button id="export-pdf-btn" class="btn btn-secondary">
+                        📄 Generar Informe PDF
+                    </button>
+                </div>
+            </section>
+
+            <!-- Error Section -->
+            <section class="card error-section" id="error-section" style="display: none;">
+                <div class="error-content">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Error en el Análisis</h3>
+                    <p id="error-message"></p>
+                    <button id="retry-btn" class="btn btn-secondary">Reintentar</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by Google Gemini 3.0 Flash • RIAM Project</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module" src="./core/config.js"></script>
+    <script type="module" src="./core/utils.js"></script>
+    <script type="module" src="./core/prompts.js"></script>
+    <script type="module" src="./core/storage.js"></script>
+    <script type="module" src="./features/analyzer/input-handler.js"></script>
+    <script type="module" src="./features/analyzer/gemini-client.js"></script>
+    <script type="module" src="./features/results/components-table.js"></script>
+    <script type="module" src="./features/results/charts.js"></script>
+    <script type="module" src="./features/results/ui-results.js"></script>
+    <script type="module" src="./features/export/pdf-generator.js"></script>
+    <script type="module">
+        // Main app initialization
+        import { initializeApp } from './features/analyzer/input-handler.js';
+        import { getLastAnalysis, hasStoredAnalysis } from './core/storage.js';
+        import { renderResults } from './features/results/ui-results.js';
+
+        // Inicializar app
+        initializeApp();
+    </script>
+</body>
+
+</html>
