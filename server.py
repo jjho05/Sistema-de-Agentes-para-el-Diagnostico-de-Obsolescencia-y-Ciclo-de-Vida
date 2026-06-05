@@ -116,7 +116,7 @@ def run_v_agent(product_name: str, description: str, mime_type: str, image_bytes
     genai.configure(api_key=api_key)
     
     # Usar modelo multimodal compatible
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-3.5-flash')
     
     prompt = """
     Analiza la imagen de este producto e identifica los componentes físicos visibles.
@@ -365,7 +365,7 @@ def run_a_agent(product_name: str, description: str, visual_data: dict, rag_data
     print("🤖 [A-Agent] Ejecutando debate de consenso, auditoría adversaria y formateando JSON...")
     genai.configure(api_key=api_key)
     
-    model = genai.GenerativeModel('gemini-2.0-flash') # o gemini-1.5-pro si está disponible
+    model = genai.GenerativeModel('gemini-3.5-flash')
     
     # Construimos el prompt de debate
     debate_prompt = f"""

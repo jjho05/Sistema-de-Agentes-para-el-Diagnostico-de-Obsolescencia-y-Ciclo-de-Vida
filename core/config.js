@@ -3,7 +3,7 @@
 export const CONFIG = {
     // API Configuration
     GEMINI_API_KEY: '', // Se carga dinámicamente si existe
-    GEMINI_MODEL: 'gemini-3-flash-preview',
+    GEMINI_MODEL: 'gemini-3.5-flash',
     API_VERSION: 'v1beta', // Cambiar a 'v1alpha' si el modelo lo requiere
     API_ENDPOINT: 'https://generativelanguage.googleapis.com/',
     
