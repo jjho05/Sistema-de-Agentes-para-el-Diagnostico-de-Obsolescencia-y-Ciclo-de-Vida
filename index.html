@@ -28,12 +28,12 @@
             <section class="card input-section">
                 <h2 class="section-title">Ingreso de Producto</h2>
 
-                <!-- Tabs para modo de entrada -->
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="text">📝 Texto</button>
                     <button class="tab-btn" data-tab="image">🖼️ Imagen</button>
                     <button class="tab-btn" data-tab="hybrid">🔀 Híbrido</button>
                     <button class="tab-btn" data-tab="search">🔍 Base de Datos</button>
+                    <button class="tab-btn" data-tab="repository" id="repo-tab-btn">📚 Repositorios</button>
                 </div>
 
                 <!-- Tab Content: Texto -->
@@ -106,6 +106,42 @@
                         <h3 class="subsection-title" style="font-size: 1.1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Resultados en Base de Datos (Babbitt et al. & iFixit)</h3>
                         <div id="search-results-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
                             <!-- Tarjetas de búsqueda pobladas dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Repositorios Científicos y Ensayos -->
+                <div class="tab-content" id="repository-tab">
+                    <div class="repositories-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <!-- Tarjeta 1: Base de Datos Estándar -->
+                        <div class="repo-card card" style="padding: 1.2rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 style="font-size: 1.1em; color: var(--accent-color); margin-top: 0; margin-bottom: 0.5rem;">📚 1. Repositorio Estándar (BOM + iFixit)</h3>
+                                <p style="font-size: 0.85em; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                                    Base de datos unificada de 1,888 componentes cruzando las masas de laboratorio (Babbitt et al. 2020) y los pasos de desmontaje/herramientas de 11,000+ guías de iFixit.
+                                </p>
+                            </div>
+                            <button id="download-standard-btn" class="btn btn-secondary" style="width: 100%; margin-top: auto; font-size: 0.9em; height: 38px;">📥 Descargar Dataset (JSON)</button>
+                        </div>
+                        
+                        <!-- Tarjeta 2: Repositorio de Ensayos (Fotos de la Red) -->
+                        <div class="repo-card card" style="padding: 1.2rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 style="font-size: 1.1em; color: #10b981; margin-top: 0; margin-bottom: 0.5rem;">🖼️ 2. Repositorio de Ensayos (Fotos de la Red)</h3>
+                                <p style="font-size: 0.85em; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                                    Registro histórico de imágenes analizadas y clasificadas mediante el sistema multi-agente, detallando su durabilidad, puntuación EN 45554 y huella de carbono.
+                                </p>
+                            </div>
+                            <button id="download-trials-btn" class="btn btn-secondary" style="width: 100%; margin-top: auto; font-size: 0.9em; height: 38px;">📥 Descargar Ensayos (JSON)</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de Ensayos del Historial -->
+                    <div id="trials-list-container">
+                        <h3 class="subsection-title" style="font-size: 1.1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Historial de Ensayos / Fotos Clasificadas</h3>
+                        <div id="trials-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 380px; overflow-y: auto; padding-right: 0.5rem;">
+                            <p id="no-trials-message" style="text-align: center; color: var(--text-secondary); padding: 2rem 0; font-style: italic;">No se han realizado ensayos aún. Analiza un producto para registrar la primera clasificación.</p>
+                            <!-- Los ensayos se listarán dinámicamente aquí -->
                         </div>
                     </div>
                 </div>

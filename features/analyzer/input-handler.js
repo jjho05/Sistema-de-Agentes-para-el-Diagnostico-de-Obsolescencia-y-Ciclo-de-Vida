@@ -30,6 +30,9 @@ export function initializeApp() {
     // Setup search button
     setupSearch();
     
+    // Setup repositories button and actions
+    setupRepositoryTab();
+    
     // Setup retry button
     document.getElementById('retry-btn')?.addEventListener('click', () => {
         clearError();
@@ -66,9 +69,14 @@ function setupTabs() {
             currentMode = targetTab;
             currentImageData = null; // Reset imagen al cambiar de modo
             
-            // Ocultar botón de analizar si estamos en pestaña buscar
+            // Ocultar botón de analizar si estamos en pestaña buscar o repositorio
             if (analyzeBtnSection) {
-                analyzeBtnSection.style.display = targetTab === 'search' ? 'none' : 'block';
+                analyzeBtnSection.style.display = (targetTab === 'search' || targetTab === 'repository') ? 'none' : 'block';
+            }
+            
+            // Cargar historial de ensayos al activar la pestaña de repositorio
+            if (targetTab === 'repository') {
+                loadTrialsHistory();
             }
         });
     });
@@ -400,4 +408,156 @@ function renderSearchResults(matches) {
     });
     
     resultsContainer.style.display = 'block';
+}
+
+/**
+ * Configura los botones de descarga de repositorios y actualizadores
+ */
+function setupRepositoryTab() {
+    const downloadStandardBtn = document.getElementById('download-standard-btn');
+    const downloadTrialsBtn = document.getElementById('download-trials-btn');
+    const baseUrl = window.location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
+
+    downloadStandardBtn?.addEventListener('click', () => {
+        window.open(`${baseUrl}/api/download/standard`, '_blank');
+    });
+
+    downloadTrialsBtn?.addEventListener('click', () => {
+        window.open(`${baseUrl}/api/download/trials`, '_blank');
+    });
+}
+
+/**
+ * Carga el historial de ensayos clasificados desde el backend y los dibuja en la UI
+ */
+async function loadTrialsHistory() {
+    const trialsList = document.getElementById('trials-list');
+    const noTrialsMsg = document.getElementById('no-trials-message');
+    if (!trialsList) return;
+
+    try {
+        const baseUrl = window.location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
+        const response = await fetch(`${baseUrl}/api/history`);
+        if (!response.ok) throw new Error('Error al cargar historial del servidor');
+        
+        const data = await response.json();
+        const history = data.history || [];
+
+        // Limpiar lista
+        trialsList.innerHTML = '';
+
+        if (history.length === 0) {
+            if (noTrialsMsg) {
+                trialsList.appendChild(noTrialsMsg);
+            } else {
+                trialsList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem 0; font-style: italic;">No se han realizado ensayos aún.</p>';
+            }
+            return;
+        }
+
+        history.forEach(trial => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.padding = '1.2rem';
+            card.style.marginBottom = '0.8rem';
+            card.style.border = '1px solid var(--border-color)';
+            card.style.background = 'rgba(255, 255, 255, 0.01)';
+            card.style.display = 'flex';
+            card.style.gap = '1.2rem';
+            card.style.alignItems = 'flex-start';
+
+            // Imagen del producto si existe
+            if (trial.imageData) {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.width = '100px';
+                imgContainer.style.height = '100px';
+                imgContainer.style.borderRadius = '8px';
+                imgContainer.style.overflow = 'hidden';
+                imgContainer.style.border = '1px solid var(--border-color)';
+                imgContainer.style.flexShrink = '0';
+                imgContainer.style.display = 'flex';
+                imgContainer.style.alignItems = 'center';
+                imgContainer.style.justifyContent = 'center';
+                imgContainer.style.background = '#090d16';
+
+                const img = document.createElement('img');
+                img.src = trial.imageData;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                imgContainer.appendChild(img);
+                card.appendChild(imgContainer);
+            }
+
+            // Info del ensayo
+            const infoContainer = document.createElement('div');
+            infoContainer.style.flex = '1';
+
+            const title = document.createElement('h4');
+            title.style.margin = '0 0 0.5rem 0';
+            title.style.fontSize = '1.05em';
+            title.style.color = '#fff';
+            title.textContent = `🔬 ${trial.productName}`;
+
+            const meta = document.createElement('p');
+            meta.style.margin = '0 0 0.8rem 0';
+            meta.style.fontSize = '0.8em';
+            meta.style.color = 'var(--text-muted, #9ca3af)';
+            meta.textContent = `Ensayo ID: ${trial.id} • Fecha: ${trial.timestamp}`;
+
+            const stats = document.createElement('div');
+            stats.style.display = 'flex';
+            stats.style.flexWrap = 'wrap';
+            stats.style.gap = '0.8rem';
+            stats.style.marginBottom = '0.8rem';
+            stats.style.fontSize = '0.85em';
+
+            const lifespanBadge = document.createElement('span');
+            lifespanBadge.style.padding = '0.2rem 0.6rem';
+            lifespanBadge.style.borderRadius = '20px';
+            lifespanBadge.style.background = 'rgba(59, 130, 246, 0.1)';
+            lifespanBadge.style.color = '#60a5fa';
+            lifespanBadge.style.border = '1px solid rgba(59, 130, 246, 0.2)';
+            lifespanBadge.textContent = `⏱️ Vida útil: ${trial.estimatedLifespan} años`;
+
+            const repBadge = document.createElement('span');
+            repBadge.style.padding = '0.2rem 0.6rem';
+            repBadge.style.borderRadius = '20px';
+            repBadge.style.background = 'rgba(16, 185, 129, 0.1)';
+            repBadge.style.color = '#34d399';
+            repBadge.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+            repBadge.textContent = `⚙️ Reparabilidad: ${trial.reparabilityIndex?.score || 'N/D'}/10`;
+
+            const co2Badge = document.createElement('span');
+            co2Badge.style.padding = '0.2rem 0.6rem';
+            co2Badge.style.borderRadius = '20px';
+            co2Badge.style.background = 'rgba(245, 158, 11, 0.1)';
+            co2Badge.style.color = '#fbbf24';
+            co2Badge.style.border = '1px solid rgba(245, 158, 11, 0.2)';
+            co2Badge.textContent = `🌱 Huella: ${trial.carbonFootprint}`;
+
+            stats.appendChild(lifespanBadge);
+            stats.appendChild(repBadge);
+            stats.appendChild(co2Badge);
+
+            const summary = document.createElement('p');
+            summary.style.margin = '0';
+            summary.style.fontSize = '0.85em';
+            summary.style.color = 'var(--text-secondary)';
+            summary.style.lineHeight = '1.4';
+            summary.textContent = trial.summary;
+
+            infoContainer.appendChild(title);
+            infoContainer.appendChild(meta);
+            infoContainer.appendChild(stats);
+            infoContainer.appendChild(summary);
+            card.appendChild(infoContainer);
+
+            trialsList.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error('Error cargando historial de ensayos:', error);
+        trialsList.innerHTML = `<p style="text-align: center; color: #ef4444; padding: 2rem 0; font-style: italic;">Error al conectar con el servidor para obtener los ensayos.</p>`;
+    }
 }

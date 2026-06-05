@@ -3,6 +3,7 @@ import json
 import base64
 import re
 import random
+from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,6 +33,52 @@ app.mount("/core", StaticFiles(directory="core"), name="core")
 @app.get("/")
 async def read_index():
     return FileResponse("index.html")
+
+# Historial de Ensayos (Fotos Clasificadas de la Red)
+history_file = os.path.join("data", "analysis_history.json")
+analysis_history = []
+
+# Crear carpeta data si no existe
+os.makedirs("data", exist_ok=True)
+
+if os.path.exists(history_file):
+    try:
+        with open(history_file, "r", encoding="utf-8") as f:
+            analysis_history = json.load(f)
+        print(f"📖 Historial cargado con {len(analysis_history)} ensayos registrados.")
+    except Exception as e:
+        print(f"⚠️ Error cargando historial: {e}")
+
+def save_to_history(analysis: dict, image_data: Optional[str] = None):
+    carbon_footprint = "N/D"
+    if "riamMapping" in analysis:
+        reason = analysis.get("riamMapping", {}).get("physicalChemical", {}).get("reason", "")
+        match = re.search(r"([\d\.]+)\s*kg", reason)
+        if match:
+            carbon_footprint = f"{match.group(1)} kg CO2"
+            
+    history_entry = {
+        "id": str(random.randint(100000, 999999)),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "productName": analysis.get("productName", "Producto Desconocido"),
+        "estimatedLifespan": analysis.get("estimatedLifespan", 0.0),
+        "weakestLink": analysis.get("weakestLink", "N/D"),
+        "reparabilityIndex": analysis.get("reparabilityIndex", {}),
+        "carbonFootprint": carbon_footprint,
+        "summary": analysis.get("summary", ""),
+        "imageData": image_data
+    }
+    
+    analysis_history.insert(0, history_entry)
+    
+    if len(analysis_history) > 50:
+        analysis_history.pop()
+        
+    try:
+        with open(history_file, "w", encoding="utf-8") as f:
+            json.dump(analysis_history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"⚠️ Error guardando historial: {e}")
 
 # Inicializar modelo de embeddings para ChromaDB
 print("🧠 Cargando modelo de embeddings para RAG local...")
@@ -437,6 +484,12 @@ async def analyze_product(request: AnalysisRequest, x_gemini_api_key: Optional[s
         api_key=api_key
     )
     
+    # Guardar en el historial de ensayos (Fotos de la Red)
+    try:
+        save_to_history(final_analysis, request.imageData)
+    except Exception as he:
+        print(f"⚠️ Error al guardar ensayo en historial: {he}")
+        
     print("--- ✅ FINALIZADO FLUJO MULTI-AGENTE ---")
     return final_analysis
 
@@ -478,6 +531,28 @@ async def search_database(q: str):
     except Exception as e:
         print(f"❌ Error en búsqueda de base de datos: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/history")
+async def get_history():
+    return {"history": analysis_history}
+
+@app.get("/api/download/standard")
+async def download_standard():
+    file_path = os.path.join("data", "fused_dataset.json")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="application/json", filename="SADOC_Standard_Dataset.json")
+    else:
+        raise HTTPException(status_code=404, detail="Dataset estándar no encontrado.")
+
+@app.get("/api/download/trials")
+async def download_trials():
+    if os.path.exists(history_file):
+        return FileResponse(history_file, media_type="application/json", filename="SADOC_Classified_Trials.json")
+    else:
+        # Si no existe, crear un archivo vacío
+        with open(history_file, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        return FileResponse(history_file, media_type="application/json", filename="SADOC_Classified_Trials.json")
 
 if __name__ == "__main__":
     import uvicorn

@@ -38,6 +38,9 @@ data/vector_db/
 MyFixit-Dataset-master/
 raw_data/
 
+# Ignorar historial de análisis local
+data/analysis_history.json
+
 # Ignorar archivos binarios locales de usuario que Hugging Face rechaza
 *.docx
 *.xlsx
