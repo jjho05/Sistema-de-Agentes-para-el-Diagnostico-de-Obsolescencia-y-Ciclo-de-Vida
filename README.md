@@ -1,3 +1,13 @@
+---
+title: Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida
+emoji: 🔬
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🔬 SADOC - Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida
 
 **SADOC** es una plataforma científica local de grado industrial diseñada para el **Análisis Forense de Durabilidad, Reparabilidad y Huella de Carbono** de productos electrónicos de consumo, enfocada en evaluar y predecir la duración de componentes críticos. 
