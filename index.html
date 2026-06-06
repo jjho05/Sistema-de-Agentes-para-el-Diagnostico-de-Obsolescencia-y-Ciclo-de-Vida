@@ -22,16 +22,6 @@
                 <p class="sidebar-subtitle">Ecodiseño & Durabilidad</p>
             </div>
 
-            <!-- API Key Input en Sidebar -->
-            <div class="sidebar-api-key">
-                <label for="api-key-input">Gemini API Key</label>
-                <div class="api-key-row">
-                    <input type="password" id="api-key-input" placeholder="AIzaSy...">
-                    <button id="save-api-key" title="Guardar Clave">💾</button>
-                </div>
-                <small id="api-key-status" class="api-key-status" style="display: none;">✓ Guardada</small>
-            </div>
-
             <nav class="sidebar-nav">
                 <div class="nav-title">Modos de Análisis</div>
                 <button class="tab-btn active" data-tab="hybrid">🔀 Modo Híbrido</button>
@@ -347,17 +337,14 @@
         import { initializeApp } from './features/analyzer/input-handler.js';
         import { getLastAnalysis, hasStoredAnalysis } from './core/storage.js';
         import { renderResults } from './features/results/ui-results.js';
-        import { configLoadedPromise } from './core/config.js';
 
-        configLoadedPromise.then(() => {
-            initializeApp();
-            if (hasStoredAnalysis()) {
-                const last = getLastAnalysis();
-                if (last) {
-                    renderResults(last);
-                }
+        initializeApp();
+        if (hasStoredAnalysis()) {
+            const last = getLastAnalysis();
+            if (last) {
+                renderResults(last);
             }
-        });
+        }
     </script>
 </body>
 

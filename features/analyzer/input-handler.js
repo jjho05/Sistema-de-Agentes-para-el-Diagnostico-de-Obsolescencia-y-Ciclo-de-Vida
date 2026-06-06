@@ -1,5 +1,5 @@
 // features/analyzer/input-handler.js
-import { initializeAPIKey, updateAPIKey } from '../../core/config.js';
+import { initializeAPIKey } from '../../core/config.js';
 import { fileToBase64, validateImage, showError, clearError, toggleElement, showToast } from '../../core/utils.js';
 import { analyzeProduct } from './gemini-client.js';
 import { renderResults } from '../results/ui-results.js';
@@ -11,9 +11,6 @@ let currentImageData = null;
  * Inicializa la aplicación
  */
 export function initializeApp() {
-    // Inicializar API Key desde el formulario o config
-    setupApiKeyInput();
-    
     // Setup tabs
     setupTabs();
     
@@ -566,54 +563,5 @@ async function loadTrialsHistory() {
     } catch (error) {
         console.error('Error cargando historial de ensayos:', error);
         trialsList.innerHTML = `<p style="text-align: center; color: #ef4444; padding: 2rem 0; font-style: italic;">Error al conectar con el servidor para obtener los ensayos.</p>`;
-    }
-}
-
-function setupApiKeyInput() {
-    const apiInput = document.getElementById('api-key-input');
-    const saveBtn = document.getElementById('save-api-key');
-    const keyStatus = document.getElementById('api-key-status');
-    
-    // Cargar clave guardada de localStorage
-    const savedKey = localStorage.getItem('sadoc_gemini_api_key');
-    if (savedKey) {
-        if (apiInput) apiInput.value = savedKey;
-        updateAPIKey(savedKey);
-        if (keyStatus) {
-            keyStatus.style.display = 'inline';
-            keyStatus.textContent = '✓ Guardada';
-        }
-    } else {
-        // Fallback a config.local.js
-        const apiKey = initializeAPIKey();
-        if (apiKey) {
-            if (apiInput) apiInput.value = apiKey;
-            if (keyStatus) {
-                keyStatus.style.display = 'inline';
-                keyStatus.textContent = '✓ Configurada';
-            }
-        } else if (window.location.protocol === 'file:') {
-            showToast('Ingresa tu API Key en la barra lateral para continuar.', 'warning', 'Clave API Pendiente');
-        }
-    }
-    
-    if (saveBtn && apiInput) {
-        saveBtn.addEventListener('click', () => {
-            const newKey = apiInput.value.trim();
-            if (newKey) {
-                localStorage.setItem('sadoc_gemini_api_key', newKey);
-                updateAPIKey(newKey);
-                showToast('API Key guardada correctamente', 'success');
-                if (keyStatus) {
-                    keyStatus.style.display = 'inline';
-                    keyStatus.textContent = '✓ Guardada';
-                }
-            } else {
-                localStorage.removeItem('sadoc_gemini_api_key');
-                updateAPIKey('');
-                showToast('API Key eliminada', 'info');
-                if (keyStatus) keyStatus.style.display = 'none';
-            }
-        });
     }
 }

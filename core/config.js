@@ -2,9 +2,9 @@
 
 export const CONFIG = {
     // API Configuration
-    GEMINI_API_KEY: '', // Se carga dinámicamente si existe
+    GEMINI_API_KEY: '', // La clave la gestiona el backend (variable de entorno GEMINI_API_KEY en HF Secrets)
     GEMINI_MODEL: 'gemini-3.5-flash',
-    API_VERSION: 'v1beta', // Cambiar a 'v1alpha' si el modelo lo requiere
+    API_VERSION: 'v1beta',
     API_ENDPOINT: 'https://generativelanguage.googleapis.com/',
     
     // App Settings
@@ -15,29 +15,14 @@ export const CONFIG = {
     ANIMATION_DURATION: 300,
 };
 
-// Cargar la API Key local de forma dinámica para no romper el despliegue en producción
-export const configLoadedPromise = (async function loadLocalConfig() {
-    try {
-        const module = await import('../config.local.js');
-        if (module && module.LOCAL_CONFIG) {
-            CONFIG.GEMINI_API_KEY = module.LOCAL_CONFIG.GEMINI_API_KEY;
-            console.log('✅ API Key cargada desde config.local.js');
-        }
-    } catch (e) {
-        console.warn('⚠️ No se encontró config.local.js o la API Key local está vacía. Se usará el backend con clave de servidor.');
-    }
-})();
-
 // Construye el endpoint completo
 export function getAPIEndpoint() {
     return `${CONFIG.API_ENDPOINT}${CONFIG.API_VERSION}/models/`;
 }
 
-// Inicializar API Key (ya cargada desde config.local.js)
+// Inicializar API Key
 export function initializeAPIKey() {
-    // Validar que existe la API Key
     if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY.trim() === '') {
-        console.error('⚠️ API Key no configurada. Edita config.local.js y agrega tu Gemini API Key.');
         return null;
     }
     return CONFIG.GEMINI_API_KEY;
