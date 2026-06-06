@@ -12,7 +12,7 @@
     padding: 0.875rem var(--spacing-lg);
     background: transparent;
     border: none;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-text-muted);
@@ -159,7 +159,7 @@
 }
 
 .summary-header h3 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.6rem;
     font-weight: 700;
     color: var(--color-text);
@@ -185,7 +185,7 @@
 }
 
 .lifespan-value {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 2rem;
     font-weight: 800;
     margin-top: var(--spacing-xs);
@@ -218,7 +218,7 @@
 }
 
 .weakest-label {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
     color: var(--color-danger);
 }
@@ -277,7 +277,7 @@
 }
 
 .reparability-header h3 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.4rem;
     font-weight: 700;
 }
@@ -292,7 +292,7 @@
     align-items: center;
     justify-content: center;
     color: white;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-weight: 800;
     font-size: 1.6rem;
     border: 2px solid rgba(255, 255, 255, 0.2);
@@ -311,7 +311,7 @@
 }
 
 .reparability-label {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--color-text-cyan);
@@ -351,7 +351,7 @@
 .components-table th {
     padding: var(--spacing-md);
     text-align: left;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--color-text-muted);
@@ -560,7 +560,7 @@
 }
 
 .toast-title {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
     margin-bottom: 0.2rem;
     color: var(--color-text);

@@ -16,7 +16,7 @@ export const CONFIG = {
 };
 
 // Cargar la API Key local de forma dinámica para no romper el despliegue en producción
-async function loadLocalConfig() {
+export const configLoadedPromise = (async function loadLocalConfig() {
     try {
         const module = await import('../config.local.js');
         if (module && module.LOCAL_CONFIG) {
@@ -26,9 +26,7 @@ async function loadLocalConfig() {
     } catch (e) {
         console.warn('⚠️ No se encontró config.local.js o la API Key local está vacía. Se usará el backend con clave de servidor.');
     }
-}
-
-loadLocalConfig();
+})();
 
 // Construye el endpoint completo
 export function getAPIEndpoint() {

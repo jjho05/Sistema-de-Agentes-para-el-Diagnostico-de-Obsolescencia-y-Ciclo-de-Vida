@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SADOC — Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida</title>
-    <meta name="description" content="SADOC: Sistema Multi-Agente de Diagnóstico de Obsolescencia y Ciclo de Vida de Productos Electrónicos basado en ISO 14040 y la Norma Europea de Reparabilidad (EN 45554).">
+    <title>SADOC — Sistema de Agentes para la Durabilidad y Ecodiseño</title>
+    <meta name="description" content="SADOC: Sistema Multi-Agente de Análisis de Durabilidad y Ciclo de Vida de Productos Electrónicos basado en ISO 14040 y la Norma Europea de Reparabilidad (EN 45554).">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/css/main.css">
     <link rel="stylesheet" href="./assets/css/components.css">
 </head>
@@ -18,8 +18,8 @@
         <!-- Sidebar lateral -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h2 class="sidebar-logo">🔬 SADOC</h2>
-                <p class="sidebar-subtitle">Diagnóstico Forense</p>
+                <h2 class="sidebar-logo">SADOC</h2>
+                <p class="sidebar-subtitle">Ecodiseño & Durabilidad</p>
             </div>
 
             <!-- API Key Input en Sidebar -->
@@ -53,7 +53,7 @@
             <!-- Header del Dashboard -->
             <header class="dashboard-header">
                 <div class="header-title-area">
-                    <h1>Panel de Diagnóstico Forense de Ciclo de Vida</h1>
+                    <h1>Panel de Análisis de Ciclo de Vida y Ecodiseño</h1>
                     <p class="header-desc">Análisis multi-agente en tiempo real & Web Search Grounding</p>
                 </div>
                 <div class="header-agents">
@@ -347,14 +347,17 @@
         import { initializeApp } from './features/analyzer/input-handler.js';
         import { getLastAnalysis, hasStoredAnalysis } from './core/storage.js';
         import { renderResults } from './features/results/ui-results.js';
+        import { configLoadedPromise } from './core/config.js';
 
-        initializeApp();
-        if (hasStoredAnalysis()) {
-            const last = getLastAnalysis();
-            if (last) {
-                renderResults(last);
+        configLoadedPromise.then(() => {
+            initializeApp();
+            if (hasStoredAnalysis()) {
+                const last = getLastAnalysis();
+                if (last) {
+                    renderResults(last);
+                }
             }
-        }
+        });
     </script>
 </body>
 

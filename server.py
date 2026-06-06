@@ -12,11 +12,23 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import google.generativeai as genai
 import chromadb
-from sentence_transformers import SentenceTransformer
 import pandas as pd
+from sentence_transformers import SentenceTransformer
 import urllib.request
 import urllib.parse
 from bs4 import BeautifulSoup
+# Cargar API Key local desde config.local.js si no está establecida en las variables de entorno (útil para desarrollo local)
+local_config_path = "config.local.js"
+if not os.environ.get("GEMINI_API_KEY") and os.path.exists(local_config_path):
+    try:
+        with open(local_config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            match = re.search(r"GEMINI_API_KEY\s*:\s*['\"]([^'\"]+)['\"]", content)
+            if match:
+                os.environ["GEMINI_API_KEY"] = match.group(1)
+                print(f"✅ [Server] API Key de Gemini cargada desde config.local.js ({len(match.group(1))} caracteres)")
+    except Exception as e:
+        print(f"⚠️ [Server] No se pudo leer config.local.js: {e}")
 
 app = FastAPI(title="SADOC - Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida", version="4.0")
 

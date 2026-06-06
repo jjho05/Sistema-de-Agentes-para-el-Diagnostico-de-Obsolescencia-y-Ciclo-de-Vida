@@ -56,7 +56,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: radial-gradient(circle at 50% 0%, #111827 0%, var(--color-bg) 70%);
     color: var(--color-text);
     line-height: 1.6;
@@ -93,7 +93,7 @@ body {
 }
 
 .title {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 3.2rem;
     font-weight: 800;
     letter-spacing: -0.04em;
@@ -107,7 +107,7 @@ body {
 }
 
 .subtitle {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 1.1rem;
     color: var(--color-text-muted);
     font-weight: 400;
@@ -124,7 +124,7 @@ body {
 }
 
 .header-tag {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     padding: 0.3rem 0.75rem;
@@ -166,7 +166,7 @@ body {
 }
 
 .section-title {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.6rem;
     font-weight: 700;
     color: var(--color-text);
@@ -179,7 +179,7 @@ body {
 }
 
 .subsection-title {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.3rem;
     font-weight: 600;
     color: var(--color-text);
@@ -193,7 +193,7 @@ body {
 
 .form-group label {
     display: block;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
     margin-bottom: var(--spacing-sm);
     color: var(--color-text-muted);
@@ -247,7 +247,7 @@ body {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
 }
 
 .btn:disabled {
@@ -386,7 +386,7 @@ body {
 }
 
 .kpi-value {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-text);
@@ -459,7 +459,7 @@ body {
 }
 
 .sidebar-logo {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.6rem;
     font-weight: 800;
     background: linear-gradient(135deg, #38bdf8 0%, #8b5cf6 100%);
@@ -561,7 +561,7 @@ body {
     border: 1px solid transparent;
     border-radius: var(--radius-md);
     color: var(--color-text-muted);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 0.85rem;
     font-weight: 500;
     text-align: left;
@@ -618,7 +618,7 @@ body {
 }
 
 .header-title-area h1 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--color-text);
@@ -687,7 +687,7 @@ body {
 }
 
 .panel-title {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -721,7 +721,7 @@ body {
 }
 
 .placeholder-content h3 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: var(--spacing-sm);
