@@ -160,7 +160,7 @@ export async function generatePDF(analysis) {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(37, 99, 235);
-    doc.text('Índice de Reparabilidad (EN 45554)', margin + 5, yPosition + 7);
+    doc.text('Índice de Reparabilidad (Norma Europea)', margin + 5, yPosition + 7);
     
     doc.setFontSize(14);
     doc.text(`${analysis.reparabilityIndex.score}/10`, margin + contentWidth - 20, yPosition + 12);
@@ -173,35 +173,6 @@ export async function generatePDF(analysis) {
     doc.setTextColor(100, 100, 100);
     doc.text(analysis.reparabilityIndex.details, margin + 5, yPosition + 20);
     yPosition += 35;
-
-    // === MATRIZ RIAM ===
-    if (yPosition > pageHeight - 60) { doc.addPage(); yPosition = margin; }
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(37, 99, 235);
-    doc.text('📊 Matriz de Evaluación RIAM', margin, yPosition);
-    yPosition += 8;
-    
-    const riamData = [
-        ['Categoría', 'Puntaje', 'Justificación'],
-        ['Físico/Químico (PC)', analysis.riamMapping.physicalChemical.score, analysis.riamMapping.physicalChemical.reason],
-        ['Biológico/Ecológico (BE)', analysis.riamMapping.biologicalEcological.score, analysis.riamMapping.biologicalEcological.reason],
-        ['Social/Cultural (SC)', analysis.riamMapping.socialCultural.score, analysis.riamMapping.socialCultural.reason],
-        ['Económico/Operacional (EO)', analysis.riamMapping.economicOperational.score, analysis.riamMapping.economicOperational.reason]
-    ];
-    
-    doc.autoTable({
-        startY: yPosition,
-        head: [riamData[0]],
-        body: riamData.slice(1),
-        theme: 'grid',
-        styles: { fontSize: 8 },
-        columnStyles: { 1: { halign: 'center', fontStyle: 'bold' } },
-        margin: { left: margin, right: margin }
-    });
-    
-    yPosition = doc.lastAutoTable.finalY + 10;
 
     // === TABLA DE COMPONENTES ===
     doc.setFontSize(14);
@@ -352,7 +323,7 @@ export async function generatePDF(analysis) {
         doc.save(fileName);
     } catch (error) {
         console.error('Error al guardar PDF con nombre sanitizado:', error);
-        doc.save('Analisis_Producto_RIAM.pdf'); // Fallback seguro
+        doc.save('Analisis_Producto_SADOC.pdf'); // Fallback seguro
     }
 }
 

@@ -391,7 +391,7 @@ function renderSearchResults(matches) {
         
         details.innerHTML = `<strong>Componente:</strong> ${item.document.split(' - ')[1]} <br>
                              <strong>Masa:</strong> ${item.massGrams}g | 
-                             <strong>Reparabilidad (EN 45554):</strong> ${item.repairabilityScore}/10 | 
+                             <strong>Reparabilidad (Norma Europea):</strong> ${item.repairabilityScore}/10 | 
                              <strong>Impacto (ISO 14040):</strong> <span style="color:${impactColor}; font-weight: 600;">${item.environmentalImpact}</span>`;
         
         const source = document.createElement('p');

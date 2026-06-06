@@ -355,18 +355,18 @@ def run_c_agent(visual_data: dict, rag_data: dict) -> dict:
     # Ecuación AHP EN 45554: IOR = 0.50·S1 + 0.30·S2 + 0.20·S3
     ir_score = round((0.50 * s1) + (0.30 * s2) + (0.20 * s3), 1)
 
-    # Clasificación EN 45554
+    # Clasificación de Reparabilidad (Norma Europea EN 45554)
     if ir_score >= 7.5:
-        label = "Alta Reparabilidad — Ecodiseño Excelente (EN 45554 Clase A)"
+        label = "Alta Reparabilidad — Ecodiseño Excelente (Clase A • Norma Europea)"
     elif ir_score >= 5.0:
-        label = "Reparabilidad Media — Diseño Convencional (EN 45554 Clase B)"
+        label = "Reparabilidad Media — Diseño Convencional (Clase B • Norma Europea)"
     elif ir_score >= 3.0:
-        label = "Reparabilidad Baja — Acceso Limitado a Componentes (EN 45554 Clase C)"
+        label = "Reparabilidad Baja — Acceso Limitado a Componentes (Clase C • Norma Europea)"
     else:
-        label = "Muy Baja Reparabilidad — Obsolescencia Programada (EN 45554 Clase D)"
+        label = "Muy Baja Reparabilidad — Obsolescencia Programada (Clase D • Norma Europea)"
 
     math_details = (
-        f"AHP EN 45554: 0.50×S1[Desensamblaje={s1}] + 0.30×S2[Herramientas={s2}] "
+        f"Fórmula AHP (Ecodiseño Europeo): 0.50×S1[Desensamblaje={s1}] + 0.30×S2[Herramientas={s2}] "
         f"+ 0.20×S3[Repuestos={s3}] = {ir_score}/10"
         + (" | Penalización: adhesivo estructural" if adhesive_found else "")
         + (" | Penalización: tornillos propietarios" if proprietary_found else "")

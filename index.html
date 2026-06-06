@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SADOC — Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida</title>
-    <meta name="description" content="SADOC: Sistema Multi-Agente de Diagnóstico de Obsolescencia y Ciclo de Vida de Productos Electrónicos basado en ISO 14040 y EN 45554.">
+    <meta name="description" content="SADOC: Sistema Multi-Agente de Diagnóstico de Obsolescencia y Ciclo de Vida de Productos Electrónicos basado en ISO 14040 y la Norma Europea de Reparabilidad (EN 45554).">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <div class="header-badge">Sistema Multi-Agente · ISO 14040 · EN 45554</div>
+            <div class="header-badge">Sistema Multi-Agente · ISO 14040 · Reparabilidad</div>
             <div class="header-content">
                 <h1 class="title">🔬 SADOC</h1>
                 <p class="subtitle">Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida</p>
@@ -136,7 +136,7 @@
                             <div>
                                 <h3 style="font-size: 1.1em; color: #10b981; margin-top: 0; margin-bottom: 0.5rem;">🖼️ 2. Repositorio de Ensayos (Fotos de la Red)</h3>
                                 <p style="font-size: 0.85em; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-                                    Registro histórico de imágenes analizadas y clasificadas mediante el sistema multi-agente, detallando su durabilidad, puntuación EN 45554 y huella de carbono.
+                                    Registro histórico de imágenes analizadas y clasificadas mediante el sistema multi-agente, detallando su durabilidad, índice de reparabilidad y huella de carbono.
                                 </p>
                             </div>
                             <div style="display: flex; gap: 0.5rem; margin-top: auto;">
@@ -183,7 +183,7 @@
                         <div class="kpi-item">
                             <span class="kpi-icon">⚙️</span>
                             <div class="kpi-info">
-                                <span class="kpi-label">Reparabilidad EN 45554</span>
+                                <span class="kpi-label">Índice de Reparabilidad</span>
                                 <span class="kpi-value" id="kpi-repairability">— / 10</span>
                             </div>
                         </div>
@@ -214,7 +214,10 @@
 
                 <div class="reparability-premium-card">
                     <div class="reparability-header">
-                        <h3>Índice de Reparabilidad (EN 45554)</h3>
+                        <h3>Índice de Reparabilidad</h3>
+                        <p class="reparability-explanation" style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0.5rem 0 0 0; line-height: 1.4;">
+                            ℹ️ Evaluado según la <strong>Norma Europea EN 45554</strong> para el ecodiseño, la cual puntúa la facilidad de desensamblaje, herramientas requeridas y disponibilidad de piezas de repuesto.
+                        </p>
                         <div class="reparability-score-circle">
                             <span id="reparability-score">0</span>
                             <small>/10</small>
@@ -286,7 +289,7 @@
         <footer class="footer">
             <div class="footer-content">
                 <p>🔬 <strong>SADOC</strong> — Sistema Multi-Agente para el Diagnóstico de Obsolescencia y Ciclo de Vida</p>
-                <p class="footer-meta">Powered by <strong>Google Gemini 3.5 Flash</strong> · Proyecto RIAM · ISO 14040/14044 · EN 45554</p>
+                <p class="footer-meta">Powered by <strong>Google Gemini 3.5 Flash</strong> · ISO 14040/14044 · Norma Europea de Reparabilidad</p>
             </div>
         </footer>
     </div>
