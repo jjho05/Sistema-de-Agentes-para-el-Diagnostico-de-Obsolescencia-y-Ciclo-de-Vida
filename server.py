@@ -689,8 +689,8 @@ async def download_standard_excel():
         
     try:
         df = pd.read_json(json_path)
-        if "tools_required" in df.columns:
-            df["tools_required"] = df["tools_required"].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
+        if "ifixit_tools_required" in df.columns:
+            df["ifixit_tools_required"] = df["ifixit_tools_required"].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
             
         df.to_excel(excel_path, index=False, sheet_name="BOM Estándar Consolidado")
         return FileResponse(excel_path, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename="SADOC_Standard_Dataset.xlsx")

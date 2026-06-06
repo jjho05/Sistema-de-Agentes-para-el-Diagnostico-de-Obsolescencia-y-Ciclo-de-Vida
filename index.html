@@ -329,7 +329,6 @@
             </div>
         </main>
     </div>
-    </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -350,6 +349,12 @@
         import { renderResults } from './features/results/ui-results.js';
 
         initializeApp();
+        if (hasStoredAnalysis()) {
+            const last = getLastAnalysis();
+            if (last) {
+                renderResults(last);
+            }
+        }
     </script>
 </body>
 
