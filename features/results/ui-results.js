@@ -1,7 +1,6 @@
 // features/results/ui-results.js
 import { formatYears, toggleElement, showToast } from '../../core/utils.js';
 import { renderComponentsTable } from './components-table.js';
-import { renderLifespanChart } from './charts.js';
 import { generatePDF } from '../export/pdf-generator.js';
 import { saveAnalysis } from '../../core/storage.js';
 
@@ -16,7 +15,6 @@ export function renderResults(analysis) {
     renderSummary(analysis);
     renderReparability(analysis.reparabilityIndex);
     renderComponentsTable(analysis.components);
-    renderLifespanChart(analysis.components);
     renderSources(analysis);
     renderRecommendations(analysis.recommendations);
     renderConsensus(analysis.consensusLog);
