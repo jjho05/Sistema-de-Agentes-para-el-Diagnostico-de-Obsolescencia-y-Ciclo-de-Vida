@@ -22,8 +22,8 @@ export function renderResults(analysis) {
     renderConsensus(analysis.consensusLog);
     setupPDFExport();
 
-    // Guardar en historial
-    saveAnalysis(analysis).catch(err => console.warn('[SADOC] No se pudo guardar el análisis:', err));
+    // Guardar en historial (función síncrona — no devuelve Promise)
+    try { saveAnalysis(analysis); } catch (err) { console.warn('[SADOC] No se pudo guardar:', err); }
 
     const resultsSection = document.getElementById('results-section');
     toggleElement(resultsSection, true);
