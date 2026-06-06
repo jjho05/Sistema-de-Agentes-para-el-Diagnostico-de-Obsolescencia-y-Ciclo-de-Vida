@@ -365,78 +365,106 @@ def run_c_agent(visual_data: dict, rag_data: dict) -> dict:
 def run_a_agent(product_name: str, description: str, visual_data: dict, rag_data: dict, math_data: dict, api_key: str) -> dict:
     print("🤖 [A-Agent] Ejecutando debate de consenso, auditoría adversaria y formateando JSON...")
     genai.configure(api_key=api_key)
-    
+
     model = genai.GenerativeModel('gemini-3.5-flash')
-    
-    # Construimos el prompt de debate
+
+    # ── Pre-computar variables de reparabilidad fuera del f-string
+    #    (evita SyntaxError por {{}} anidado dentro de expresiones {})
+    reparability    = math_data.get('reparability') or {}
+    rep_score       = reparability.get('score', 5.0)
+    rep_label       = reparability.get('label', 'Sin clasificar')
+    rep_details     = reparability.get('details', '')
+    carbon_total_kg = math_data.get('carbon_footprint_total_kg', 0)
+    carbon_str      = f"{carbon_total_kg:.1f} kg CO\u2082-eq (estimado ISO 14067)"
+
     debate_prompt = f"""
-    Eres el A-Agent (Agente Auditor Adversario) del sistema SADOC. Reconcilia los datos de los agentes V, N y C para generar un análisis forense técnico de ciclo de vida y durabilidad de un producto electrónico.
-    
-    PRODUCTO: {product_name}
-    DESCRIPCIÓN ADICIONAL: {description}
-    
-    BLACKBOARD DE AGENTES:
-    - V-Agent (Visual): {json.dumps(visual_data, ensure_ascii=False)}
-    - N-Agent (RAG Babbitt et al. 2020): {json.dumps(rag_data, ensure_ascii=False)}
-    - C-Agent (Cálculos AHP + CO₂): {json.dumps(math_data, ensure_ascii=False)}
-    
-    REGLAS DE CONSENSO:
-    - Usa los datos de masa del RAG (Babbitt 2020) como fuente primaria (peso 0.5).
-    - Usa lo detectado por V-Agent para contexto de ensamblaje (peso 0.3).
-    - La descripción del usuario aporta contexto adicional (peso 0.2).
-    - La vida útil total del producto = mínimo lifespanYears de componentes donde isCritical=true Y repairabilityScore < 5.
-    - Si todos los críticos son reparables (score >= 5), la vida útil = segundo mínimo o la media.
-    - La huella de carbono total viene del C-Agent: {math_data.get('carbon_footprint_total_kg', 0)} kg CO₂-eq.
-    
-    RESPONDE ÚNICAMENTE CON ESTE JSON PURO (sin markdown, sin texto extra):
+Eres el A-Agent (Agente Auditor Adversario) del sistema SADOC. Reconcilia los datos de los agentes V, N y C para generar un analisis forense tecnico de ciclo de vida y durabilidad de un producto electronico.
+
+PRODUCTO: {product_name}
+DESCRIPCION ADICIONAL: {description}
+
+BLACKBOARD DE AGENTES:
+- V-Agent (Visual): {json.dumps(visual_data, ensure_ascii=False)}
+- N-Agent (RAG Babbitt et al. 2020): {json.dumps(rag_data, ensure_ascii=False)}
+- C-Agent (Calculos AHP + CO2): {json.dumps(math_data, ensure_ascii=False)}
+
+REGLAS DE CONSENSO:
+- Usa los datos de masa del RAG (Babbitt 2020) como fuente primaria (peso 0.5).
+- Usa lo detectado por V-Agent para contexto de ensamblaje (peso 0.3).
+- La descripcion del usuario aporta contexto adicional (peso 0.2).
+- La vida util total = minimo lifespanYears de componentes donde isCritical=true Y repairabilityScore < 5.
+- Si todos los criticos son reparables (score >= 5), usa la media o segundo minimo.
+- La huella de carbono total del C-Agent es: {carbon_total_kg} kg CO2-eq.
+- Responde en español (tildes y caracteres especiales incluidos).
+
+DEVUELVE UNICAMENTE JSON PURO. Sin markdown, sin explicaciones, sin comentarios dentro del JSON.
+El JSON debe empezar con {{ y terminar con }}.
+
+{{
+  "productName": "Nombre oficial del producto",
+  "estimatedLifespan": 0,
+  "weakestLink": "Nombre del componente critico que falla primero",
+  "carbonFootprint": "{carbon_str}",
+  "confidenceScore": "Alto",
+  "summary": "Parrafo tecnico de 3-4 oraciones: ciclo de vida, vida util y huella de carbono.",
+  "consensusLog": "2-3 oraciones del debate V/N/C-Agent.",
+  "reparabilityIndex": {{
+    "score": {rep_score},
+    "label": "{rep_label}",
+    "details": "{rep_details}"
+  }},
+  "components": [
     {{
-      "productName": "string",
-      "estimatedLifespan": number,
-      "weakestLink": "string",
-      "carbonFootprint": "{math_data.get('carbon_footprint_total_kg', 0):.1f} kg CO₂-eq (estimado ISO 14067)",
-      "confidenceScore": "Alto | Medio | Bajo",
-      "summary": "Párrafo técnico de 3-4 oraciones sobre el ciclo de vida, vida útil y huella de carbono.",
-      "consensusLog": "2-3 oraciones sobre el debate entre V-Agent, N-Agent y C-Agent. Ej: V-Agent detectó pegamento pero RAG confirma tornillos Torx T5...",
-      "reparabilityIndex": {{
-        "score": {math_data.get('reparability', {{}}).get('score', 5.0)},
-        "label": "{math_data.get('reparability', {{}}).get('label', 'Sin clasificar')}",
-        "details": "{math_data.get('reparability', {{}}).get('details', '')}"
-      }},
-      "components": [
-        {{
-          "name": "string",
-          "material": "string",
-          "massGrams": number,
-          "lifespanYears": number,
-          "failureMode": "Mecanismo físico-químico exacto de degradación",
-          "repairabilityScore": number,
-          "environmentalImpact": "Low | Medium | High",
-          "isCritical": boolean,
-          "normativeReference": "Norma aplicable (ej: EN 45554 §5.2)"
-        }}
-      ],
-      "recommendations": ["Recomendación 1", "Recomendación 2", "Recomendación 3"],
-      "sources": [{{ "title": "string", "urlOrContext": "string" }}]
+      "name": "string",
+      "material": "string",
+      "massGrams": 0,
+      "lifespanYears": 0,
+      "failureMode": "Mecanismo fisico-quimico exacto de degradacion",
+      "repairabilityScore": 0,
+      "environmentalImpact": "Low",
+      "isCritical": true,
+      "normativeReference": "EN 45554 5.2"
     }}
-    """
-    
+  ],
+  "recommendations": [
+    "Recomendacion de ecodiseno 1",
+    "Recomendacion de ecodiseno 2",
+    "Recomendacion de ecodiseno 3"
+  ],
+  "sources": [
+    {{"title": "Babbitt et al. (2020)", "urlOrContext": "Laboratory Disassembly Dataset - ASU/CMU"}}
+  ]
+}}
+"""
+
     try:
         response = model.generate_content(debate_prompt)
         text = response.text.strip()
-        
-        # Limpieza robusta del JSON devuelto
-        if text.startswith("```json"):
-            text = text.replace("```json", "", 1).replace("```", "", 1).strip()
-        elif text.startswith("```"):
-            text = text.replace("```", "", 1).replace("```", "", 1).strip()
-            
-        # Parsear para asegurar validez
+        print(f"📄 [A-Agent] Respuesta recibida ({len(text)} chars). Extrayendo JSON...")
+
+        # ── Limpieza robusta: soporta ```json...```, ```...```, o JSON directo
+        json_match = re.search(r'```(?:json)?\s*([\s\S]+?)\s*```', text)
+        if json_match:
+            text = json_match.group(1).strip()
+        else:
+            # Extraer el primer objeto JSON completo (del primer { al último })
+            start = text.find('{')
+            end   = text.rfind('}')
+            if start != -1 and end != -1 and end > start:
+                text = text[start:end + 1]
+
         analysis = json.loads(text)
-        print("✅ [A-Agent] Reporte final validado y estructurado con éxito.")
+        print("✅ [A-Agent] JSON parseado y validado correctamente.")
         return analysis
+
+    except json.JSONDecodeError as e:
+        snippet = text[:600] if 'text' in dir() else '(no text)'
+        print(f"❌ [A-Agent] JSONDecodeError: {e}")
+        print(f"   Texto recibido: {snippet}")
+        raise HTTPException(status_code=500, detail=f"La IA devolvio JSON malformado: {str(e)}")
     except Exception as e:
-        print(f"❌ [A-Agent] Error formateando o generando salida del A-Agent: {e}")
-        raise HTTPException(status_code=500, detail=f"Fallo en la síntesis del A-Agent: {str(e)}")
+        print(f"❌ [A-Agent] Error inesperado: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=f"Fallo en A-Agent: {str(e)}")
 
 
 # --- ENDPOINT DEL BACKEND ---
