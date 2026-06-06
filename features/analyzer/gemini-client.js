@@ -4,131 +4,88 @@ import { SYSTEM_PROMPT, buildUserPrompt } from '../../core/prompts.js';
 import { extractBase64, getMimeType, safeJSONParse } from '../../core/utils.js';
 
 /**
- * Llama a Gemini API para analizar un producto
+ * Llama al backend SADOC para analizar un producto
  */
 export async function analyzeProduct(productData) {
     const apiKey = getAPIKey() || '';
     const { productName, description, imageData } = productData;
-    
-    // Cambiamos el endpoint para apuntar a nuestro backend de forma relativa o local
-    const endpoint = window.location.protocol === 'file:' ? 'http://127.0.0.1:8000/api/analyze' : '/api/analyze';
-    
-    const requestBody = {
-        productName,
-        description,
-        imageData
-    };
-    
+
+    const endpoint = window.location.protocol === 'file:'
+        ? 'http://127.0.0.1:8000/api/analyze'
+        : '/api/analyze';
+
+    const requestBody = { productName, description, imageData };
+
     try {
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        if (apiKey) {
-            headers['X-Gemini-API-Key'] = apiKey;
-        }
-        
+        const headers = { 'Content-Type': 'application/json' };
+        if (apiKey) headers['X-Gemini-API-Key'] = apiKey;
+
         const response = await fetch(endpoint, {
             method: 'POST',
-            headers: headers,
+            headers,
             body: JSON.stringify(requestBody)
         });
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            const errorMessage = errorData.detail || `Error HTTP ${response.status}`;
-            throw new Error(`Error en Backend Multi-Agente: ${errorMessage}`);
+            throw new Error(errorData.detail || `Error HTTP ${response.status}`);
         }
-        
+
         const analysis = await response.json();
-        
-        // Validar estructura
-        validateAnalysis(analysis);
-        
-        return analysis;
-        
+        return normalizeAndValidate(analysis);
+
     } catch (error) {
-        console.error('Error en el análisis multi-agente:', error);
+        console.error('[SADOC] Error en análisis multi-agente:', error);
         throw error;
     }
 }
 
 /**
- * Construye el array de contenidos para la petición
+ * Normaliza y valida el análisis, rellenando campos faltantes con defaults seguros
  */
-function buildRequestContents(productName, description, imageData) {
-    const parts = [];
-    
-    // Agregar prompt de usuario
-    const userPrompt = buildUserPrompt(productName, description, !!imageData);
-    parts.push({ text: userPrompt });
-    
-    // Si hay imagen, agregarla
-    if (imageData) {
-        const base64Data = extractBase64(imageData);
-        const mimeType = getMimeType(imageData);
-        
-        parts.push({
-            inlineData: {
-                mimeType: mimeType,
-                data: base64Data
-            }
-        });
+function normalizeAndValidate(analysis) {
+    // Campos requeridos con defaults
+    const normalized = {
+        productName:        analysis.productName        || 'Producto Sin Nombre',
+        estimatedLifespan:  analysis.estimatedLifespan  ?? 0,
+        weakestLink:        analysis.weakestLink        || 'No identificado',
+        carbonFootprint:    analysis.carbonFootprint    || 'N/D',
+        confidenceScore:    analysis.confidenceScore    || 'Medio',
+        summary:            analysis.summary            || 'Análisis completado.',
+        consensusLog:       analysis.consensusLog       || 'Consenso alcanzado sin disputas.',
+        reparabilityIndex:  normalizeReparability(analysis.reparabilityIndex),
+        components:         normalizeComponents(analysis.components),
+        recommendations:    Array.isArray(analysis.recommendations) ? analysis.recommendations : [],
+        sources:            Array.isArray(analysis.sources) ? analysis.sources : [],
+    };
+
+    if (normalized.components.length === 0) {
+        throw new Error('El análisis no contiene componentes válidos.');
     }
-    
-    return [{
-        role: 'user',
-        parts: parts
-    }];
+
+    return normalized;
 }
 
-/**
- * Extrae el texto de la respuesta de Gemini
- */
-function extractTextFromResponse(data) {
-    if (!data.candidates || data.candidates.length === 0) {
-        throw new Error('No se recibió respuesta válida de Gemini');
-    }
-    
-    const candidate = data.candidates[0];
-    
-    if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
-        throw new Error('Respuesta vacía de Gemini');
-    }
-    
-    return candidate.content.parts[0].text;
+function normalizeReparability(data) {
+    if (!data) return { score: 0, label: 'No evaluado', details: '' };
+    return {
+        score:   typeof data.score === 'number' ? data.score : 0,
+        label:   data.label   || 'Sin clasificación',
+        details: data.details || '',
+    };
 }
 
-/**
- * Valida que el análisis tenga la estructura correcta
- */
-function validateAnalysis(analysis) {
-    const requiredFields = [
-        'productName', 'estimatedLifespan', 'weakestLink', 'summary', 
-        'recommendations', 'components', 'consensusLog', 
-        'reparabilityIndex', 'riamMapping'
-    ];
-    
-    for (const field of requiredFields) {
-        if (!(field in analysis)) {
-            throw new Error(`Análisis incompleto: falta el campo '${field}'`);
-        }
-    }
-    
-    if (!Array.isArray(analysis.components) || analysis.components.length === 0) {
-        throw new Error('El análisis debe contener al menos un componente');
-    }
-    
-    // Validar cada componente
-    const componentFields = ['name', 'material', 'lifespanYears', 'failureMode', 'repairabilityScore', 'environmentalImpact', 'isCritical', 'normativeReference'];
-    
-    analysis.components.forEach((comp, idx) => {
-        for (const field of componentFields) {
-            if (!(field in comp)) {
-                // Warning en lugar de error para normativa
-                console.warn(`Componente ${idx + 1} no tiene campo '${field}'`);
-            }
-        }
-    });
-    
-    return true;
+function normalizeComponents(components) {
+    if (!Array.isArray(components)) return [];
+    return components.map((c, i) => ({
+        name:               c.name               || `Componente ${i + 1}`,
+        material:           c.material           || 'Desconocido',
+        massGrams:          c.massGrams          ?? null,
+        lifespanYears:      typeof c.lifespanYears === 'number' ? c.lifespanYears : 0,
+        failureMode:        c.failureMode        || 'No especificado',
+        repairabilityScore: typeof c.repairabilityScore === 'number' ? c.repairabilityScore : 5,
+        environmentalImpact: c.environmentalImpact || 'Medium',
+        isCritical:         c.isCritical         ?? false,
+        normativeReference: c.normativeReference || '-',
+    }));
 }

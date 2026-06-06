@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SADOC - Diagnóstico de Obsolescencia y Ciclo de Vida</title>
+    <title>SADOC — Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida</title>
+    <meta name="description" content="SADOC: Sistema Multi-Agente de Diagnóstico de Obsolescencia y Ciclo de Vida de Productos Electrónicos basado en ISO 14040 y EN 45554.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,9 +17,16 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
+            <div class="header-badge">Sistema Multi-Agente · ISO 14040 · EN 45554</div>
             <div class="header-content">
                 <h1 class="title">🔬 SADOC</h1>
                 <p class="subtitle">Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida</p>
+                <div class="header-tags">
+                    <span class="header-tag">V-Agent</span>
+                    <span class="header-tag">N-Agent</span>
+                    <span class="header-tag">C-Agent</span>
+                    <span class="header-tag">A-Agent</span>
+                </div>
             </div>
         </header>
 
@@ -26,7 +34,7 @@
         <main class="main-content">
             <!-- Input Section -->
             <section class="card input-section">
-                <h2 class="section-title">Ingreso de Producto</h2>
+                <h2 class="section-title">Análisis de Producto</h2>
 
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="text">📝 Texto</button>
@@ -101,11 +109,9 @@
                         </div>
                     </div>
                     
-                    <!-- Resultados de búsqueda -->
                     <div id="search-results-container" style="margin-top: 1.5rem; display: none;">
                         <h3 class="subsection-title" style="font-size: 1.1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Resultados en Base de Datos (Babbitt et al. & iFixit)</h3>
                         <div id="search-results-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
-                            <!-- Tarjetas de búsqueda pobladas dinámicamente -->
                         </div>
                     </div>
                 </div>
@@ -113,7 +119,6 @@
                 <!-- Tab Content: Repositorios Científicos y Ensayos -->
                 <div class="tab-content" id="repository-tab">
                     <div class="repositories-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                        <!-- Tarjeta 1: Base de Datos Estándar -->
                         <div class="repo-card card" style="padding: 1.2rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <h3 style="font-size: 1.1em; color: var(--accent-color); margin-top: 0; margin-bottom: 0.5rem;">📚 1. Repositorio Estándar (BOM + iFixit)</h3>
@@ -127,7 +132,6 @@
                             </div>
                         </div>
                         
-                        <!-- Tarjeta 2: Repositorio de Ensayos (Fotos de la Red) -->
                         <div class="repo-card card" style="padding: 1.2rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <h3 style="font-size: 1.1em; color: #10b981; margin-top: 0; margin-bottom: 0.5rem;">🖼️ 2. Repositorio de Ensayos (Fotos de la Red)</h3>
@@ -142,12 +146,10 @@
                         </div>
                     </div>
                     
-                    <!-- Lista de Ensayos del Historial -->
                     <div id="trials-list-container">
                         <h3 class="subsection-title" style="font-size: 1.1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Historial de Ensayos / Fotos Clasificadas</h3>
                         <div id="trials-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 380px; overflow-y: auto; padding-right: 0.5rem;">
                             <p id="no-trials-message" style="text-align: center; color: var(--text-secondary); padding: 2rem 0; font-style: italic;">No se han realizado ensayos aún. Analiza un producto para registrar la primera clasificación.</p>
-                            <!-- Los ensayos se listarán dinámicamente aquí -->
                         </div>
                     </div>
                 </div>
@@ -165,9 +167,8 @@
 
             <!-- Results Section -->
             <section class="card results-section" id="results-section" style="display: none;">
-                <h2 class="section-title">Resultados del Análisis Forense</h2>
+                <h2 class="section-title">Resultados del Análisis Técnico</h2>
 
-                <!-- Resumen Ejecutivo -->
                 <div class="summary-card">
                     <div class="summary-header">
                         <h3 id="product-title">Producto Analizado</h3>
@@ -176,18 +177,41 @@
                             <span class="lifespan-value" id="lifespan-value">0 años</span>
                         </div>
                     </div>
-                    <div class="weakest-link">
-                        <span class="weakest-label">⚠️ Eslabón Más Débil:</span>
-                        <span class="weakest-value" id="weakest-link">-</span>
+                    
+                    <!-- KPIs Row -->
+                    <div class="kpi-row">
+                        <div class="kpi-item">
+                            <span class="kpi-icon">⚙️</span>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Reparabilidad EN 45554</span>
+                                <span class="kpi-value" id="kpi-repairability">— / 10</span>
+                            </div>
+                        </div>
+                        <div class="kpi-item">
+                            <span class="kpi-icon">🔗</span>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Componente Crítico</span>
+                                <span class="kpi-value kpi-danger" id="weakest-link">—</span>
+                            </div>
+                        </div>
+                        <div class="kpi-item">
+                            <span class="kpi-icon">🎯</span>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Nivel de Confianza</span>
+                                <span class="kpi-value" id="kpi-confidence">—</span>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <!-- Debate Multi-Agente -->
                     <div class="consensus-box" id="consensus-box">
-                        <span class="consensus-label">⚖️ Debate Multi-Agente:</span>
+                        <span class="consensus-label">⚖️ Debate Multi-Agente (V · N · C · A Agents):</span>
                         <p class="consensus-text" id="consensus-log">-</p>
                     </div>
+                    
                     <p class="summary-text" id="summary-text"></p>
                 </div>
 
-                <!-- Reparabilidad EN 45554 -->
                 <div class="reparability-premium-card">
                     <div class="reparability-header">
                         <h3>Índice de Reparabilidad (EN 45554)</h3>
@@ -202,34 +226,6 @@
                     </div>
                 </div>
 
-                <!-- Matriz RIAM -->
-                <div class="riam-section">
-                    <h3 class="subsection-title">📊 Matriz de Evaluación RIAM</h3>
-                    <div class="riam-grid">
-                        <div class="riam-item" id="riam-pc">
-                            <h4>Físico/Químico (PC)</h4>
-                            <div class="riam-score">-</div>
-                            <p class="riam-reason"></p>
-                        </div>
-                        <div class="riam-item" id="riam-be">
-                            <h4>Biológico/Ecológico (BE)</h4>
-                            <div class="riam-score">-</div>
-                            <p class="riam-reason"></p>
-                        </div>
-                        <div class="riam-item" id="riam-sc">
-                            <h4>Social/Cultural (SC)</h4>
-                            <div class="riam-score">-</div>
-                            <p class="riam-reason"></p>
-                        </div>
-                        <div class="riam-item" id="riam-eo">
-                            <h4>Económico/Operacional (EO)</h4>
-                            <div class="riam-score">-</div>
-                            <p class="riam-reason"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabla de Componentes -->
                 <div class="components-section">
                     <h3 class="subsection-title">Desglose de Componentes</h3>
                     <div class="table-container">
@@ -246,43 +242,35 @@
                                 </tr>
                             </thead>
                             <tbody id="components-tbody">
-                                <!-- Poblado dinámicamente -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Gráfico de Vida Útil -->
                 <div class="chart-section">
-                    <h3 class="subsection-title">Comparación de Vida Útil</h3>
+                    <h3 class="subsection-title">Análisis Comparativo de Vida Útil</h3>
                     <canvas id="lifespan-chart"></canvas>
                 </div>
 
-                <!-- Verificabilidad y Fuentes -->
                 <div class="sources-section">
                     <h3 class="subsection-title">🔍 Verificabilidad y Fuentes</h3>
-                    <div class="confidence-badge"
-                        style="margin-bottom: 1rem; padding: 0.5rem; background: var(--surface-color); border-radius: var(--border-radius); display: inline-flex; gap: 0.5rem; align-items: center;">
-                        <span class="confidence-label" style="font-weight: 600;">Nivel de Confianza:</span>
+                    <div class="confidence-badge" style="margin-bottom: 1rem; padding: 0.5rem; background: var(--surface-color); border-radius: var(--border-radius); display: inline-flex; gap: 0.5rem; align-items: center;">
+                        <span class="confidence-label" style="font-weight: 600;">Índice de Confianza:</span>
                         <span class="confidence-value" id="confidence-value" style="font-weight: bold;">-</span>
                     </div>
                     <ul id="sources-list" class="sources-list" style="margin-top: 0;">
-                        <!-- Poblado dinámicamente -->
                     </ul>
                 </div>
 
-                <!-- Recomendaciones -->
                 <div class="recommendations-section">
-                    <h3 class="subsection-title">💡 Recomendaciones de Ecodiseño</h3>
+                    <h3 class="subsection-title">💡 Estrategias de Ecodiseño</h3>
                     <ul id="recommendations-list" class="recommendations-list">
-                        <!-- Poblado dinámicamente -->
                     </ul>
                 </div>
 
-                <!-- Botón de Exportación -->
                 <div class="action-section">
                     <button id="export-pdf-btn" class="btn btn-secondary">
-                        📄 Generar Informe PDF
+                        📄 Generar Informe Técnico PDF
                     </button>
                 </div>
             </section>
@@ -300,7 +288,10 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Powered by Google Gemini 3.0 Flash • RIAM Project</p>
+            <div class="footer-content">
+                <p>🔬 <strong>SADOC</strong> — Sistema Multi-Agente para el Diagnóstico de Obsolescencia y Ciclo de Vida</p>
+                <p class="footer-meta">Powered by <strong>Google Gemini 3.5 Flash</strong> · Proyecto RIAM · ISO 14040/14044 · EN 45554</p>
+            </div>
         </footer>
     </div>
 
@@ -320,12 +311,10 @@
     <script type="module" src="./features/results/ui-results.js"></script>
     <script type="module" src="./features/export/pdf-generator.js"></script>
     <script type="module">
-        // Main app initialization
         import { initializeApp } from './features/analyzer/input-handler.js';
         import { getLastAnalysis, hasStoredAnalysis } from './core/storage.js';
         import { renderResults } from './features/results/ui-results.js';
 
-        // Inicializar app
         initializeApp();
     </script>
 </body>

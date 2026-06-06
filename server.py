@@ -51,12 +51,13 @@ if os.path.exists(history_file):
         print(f"⚠️ Error cargando historial: {e}")
 
 def save_to_history(analysis: dict, image_data: Optional[str] = None):
-    carbon_footprint = "N/D"
-    if "riamMapping" in analysis:
+    # carbonFootprint ahora viene directo del JSON del A-Agent
+    carbon_footprint = analysis.get("carbonFootprint", "N/D")
+    if carbon_footprint == "N/D" and "riamMapping" in analysis:
         reason = analysis.get("riamMapping", {}).get("physicalChemical", {}).get("reason", "")
         match = re.search(r"([\d\.]+)\s*kg", reason)
         if match:
-            carbon_footprint = f"{match.group(1)} kg CO2"
+            carbon_footprint = f"{match.group(1)} kg CO₂"
             
     history_entry = {
         "id": str(random.randint(100000, 999999)),
@@ -369,67 +370,54 @@ def run_a_agent(product_name: str, description: str, visual_data: dict, rag_data
     
     # Construimos el prompt de debate
     debate_prompt = f"""
-    Actúas como el Agente Auditor Adversario (A-Agent) en un sistema multi-agente de sustentabilidad.
-    Tu tarea es auditar y reconciliar las salidas de los otros agentes para generar un reporte de Análisis de Ciclo de Vida y Reparabilidad científico y estructurado de un producto.
+    Eres el A-Agent (Agente Auditor Adversario) del sistema SADOC. Reconcilia los datos de los agentes V, N y C para generar un análisis forense técnico de ciclo de vida y durabilidad de un producto electrónico.
     
-    DATOS DEL PRODUCTO:
-    - Nombre del Producto: {product_name}
-    - Descripción del Usuario: {description}
+    PRODUCTO: {product_name}
+    DESCRIPCIÓN ADICIONAL: {description}
     
-    DATOS DE ENTRADA DE LOS OTROS AGENTES (Blackboard):
-    1. V-Agent (Vision): {json.dumps(visual_data, ensure_ascii=False)}
-    2. N-Agent (RAG Científico): {json.dumps(rag_data, ensure_ascii=False)}
-    3. C-Agent (Cálculo): {json.dumps(math_data, ensure_ascii=False)}
+    BLACKBOARD DE AGENTES:
+    - V-Agent (Visual): {json.dumps(visual_data, ensure_ascii=False)}
+    - N-Agent (RAG Babbitt et al. 2020): {json.dumps(rag_data, ensure_ascii=False)}
+    - C-Agent (Cálculos AHP + CO₂): {json.dumps(math_data, ensure_ascii=False)}
     
-    PROTOCOLO DE CONSENSO:
-    Resuelve cualquier discrepancia de materiales entre V-Agent (lo visual) y N-Agent (el RAG científico de Babbitt et al. 2020) utilizando esta regla de confiabilidad bayesiana:
-    - RAG Científico (Peso 50%): Los datos de laboratorio son la autoridad primaria.
-    - Vision (Peso 30%): Lo detectado visualmente aporta estado físico actual.
-    - Text (Peso 20%): La descripción del usuario.
-    Explica brevemente este debate en el campo 'consensusLog' (máximo 150 palabras).
+    REGLAS DE CONSENSO:
+    - Usa los datos de masa del RAG (Babbitt 2020) como fuente primaria (peso 0.5).
+    - Usa lo detectado por V-Agent para contexto de ensamblaje (peso 0.3).
+    - La descripción del usuario aporta contexto adicional (peso 0.2).
+    - La vida útil total del producto = mínimo lifespanYears de componentes donde isCritical=true Y repairabilityScore < 5.
+    - Si todos los críticos son reparables (score >= 5), la vida útil = segundo mínimo o la media.
+    - La huella de carbono total viene del C-Agent: {math_data.get('carbon_footprint_total_kg', 0)} kg CO₂-eq.
     
-    FORMATO DE SALIDA EXIGIDO (JSON DE ALTA FIDELIDAD):
-    Debes devolver un JSON exacto que cumpla este esquema:
+    RESPONDE ÚNICAMENTE CON ESTE JSON PURO (sin markdown, sin texto extra):
     {{
-      "productName": "Nombre oficial del producto",
-      "estimatedLifespan": 8.5, // Número en años. La vida útil total estimada del dispositivo (generalmente el mínimo de los componentes críticos no reparables)
-      "weakestLink": "Nombre del componente crítico que fallará primero y limitará la vida útil",
-      "summary": "Resumen ejecutivo del ciclo de vida y análisis técnico del producto, integrando las normas ISO 14040 y EN 45554.",
-      "confidenceScore": "Alto | Medio | Bajo", // Nivel de confianza basado en la coincidencia con datos del RAG
-      "consensusLog": "Bitácora del debate de agentes. Ej: V-Agent detectó pegamento en carcasa pero RAG de Babbitt estipula tornillos Torx. Se aplicó peso probabilístico (RAG 0.5 vs Vision 0.3) determinando metal en carcasa y penalizando el desensamblaje por presencia de pegamento superficial.",
+      "productName": "string",
+      "estimatedLifespan": number,
+      "weakestLink": "string",
+      "carbonFootprint": "{math_data.get('carbon_footprint_total_kg', 0):.1f} kg CO₂-eq (estimado ISO 14067)",
+      "confidenceScore": "Alto | Medio | Bajo",
+      "summary": "Párrafo técnico de 3-4 oraciones sobre el ciclo de vida, vida útil y huella de carbono.",
+      "consensusLog": "2-3 oraciones sobre el debate entre V-Agent, N-Agent y C-Agent. Ej: V-Agent detectó pegamento pero RAG confirma tornillos Torx T5...",
       "reparabilityIndex": {{
-        "score": 6.8, // Usar el score calculado por C-Agent
-        "label": "Clasificación EN 45554", // Usar la etiqueta calculada por C-Agent
-        "details": "Justificación matemática AHP calculada por C-Agent"
-      }},
-      "riamMapping": {{
-        "physicalChemical": {{ "score": -2, "reason": "Justificación del impacto físico/químico, citando emisiones estimadas de CO2 de {math_data['carbon_footprint_total_kg']} kg." }}, // Puntuación de -3 a +3
-        "biologicalEcological": {{ "score": -1, "reason": "Justificación del impacto biológico/ecológico, ej: minería de litio/tierras raras si tiene batería o PCBs." }}, // Puntuación de -3 a +3
-        "socialCultural": {{ "score": 1, "reason": "Justificación del impacto social/cultural (obsolescencia percibida)." }}, // Puntuación de -3 a +3
-        "economicOperational": {{ "score": 2, "reason": "Justificación económica, vida útil esperada vs costo de reparación." }} // Puntuación de -3 a +3
+        "score": {math_data.get('reparability', {{}}).get('score', 5.0)},
+        "label": "{math_data.get('reparability', {{}}).get('label', 'Sin clasificar')}",
+        "details": "{math_data.get('reparability', {{}}).get('details', '')}"
       }},
       "components": [
         {{
-          "name": "Nombre de componente limpio (ej: Batería de Iones de Litio)",
-          "material": "Material final decidido por el consenso",
-          "lifespanYears": 4.0, // Vida útil estimada del componente
-          "failureMode": "Mecanismo físico-químico de falla (ej: Pérdida de capacidad por degradación de celdas)",
-          "repairabilityScore": 3.5, // Puntuación de reparabilidad del componente (0-10)
-          "environmentalImpact": "Low | Medium | High", // Nivel de impacto
-          "isCritical": true, // true si su falla inutiliza el aparato
-          "normativeReference": "Cláusula aplicable de EN 45554 u otra norma (ej: EN 45554 Clause 6.4)"
+          "name": "string",
+          "material": "string",
+          "massGrams": number,
+          "lifespanYears": number,
+          "failureMode": "Mecanismo físico-químico exacto de degradación",
+          "repairabilityScore": number,
+          "environmentalImpact": "Low | Medium | High",
+          "isCritical": boolean,
+          "normativeReference": "Norma aplicable (ej: EN 45554 §5.2)"
         }}
       ],
-      "recommendations": [
-        "Recomendación industrial de ecodiseño 1",
-        "Recomendación industrial de ecodiseño 2"
-      ],
-      "sources": [
-        {{ "title": "Referencia Científica", "urlOrContext": "Estudio de Babbitt et al. (2020) u otra referencia del RAG" }}
-      ]
+      "recommendations": ["Recomendación 1", "Recomendación 2", "Recomendación 3"],
+      "sources": [{{ "title": "string", "urlOrContext": "string" }}]
     }}
-    
-    Genera el JSON final en español. Devuelve ÚNICAMENTE el JSON puro sin marcas de markdown ni introducciones.
     """
     
     try:
