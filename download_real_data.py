@@ -41,7 +41,7 @@ def fetch_babbitt_dataset():
 def fetch_ifixit_sample():
     print("⏳ Descargando estructura de referencia del MyFixit Dataset desde GitHub...")
     # Descargar un archivo de ejemplo del MyFixit Dataset de GitHub
-    url = "https://raw.githubusercontent.com/rub-ksv/MyFixit-Dataset/master/data/raw/manuals.json"
+    url = "https://raw.githubusercontent.com/rub-ksv/MyFixit-Dataset/master/jsons/Apparel.json"
     os.makedirs("raw_data", exist_ok=True)
     
     try:
