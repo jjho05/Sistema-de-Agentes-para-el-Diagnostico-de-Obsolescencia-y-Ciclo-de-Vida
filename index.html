@@ -14,284 +14,321 @@
 </head>
 
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-badge">Sistema Multi-Agente · ISO 14040 · Reparabilidad</div>
-            <div class="header-content">
-                <h1 class="title">🔬 SADOC</h1>
-                <p class="subtitle">Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida</p>
-                <div class="header-tags">
-                    <span class="header-tag">V-Agent</span>
-                    <span class="header-tag">N-Agent</span>
-                    <span class="header-tag">C-Agent</span>
-                    <span class="header-tag">A-Agent</span>
+    <div class="app-layout">
+        <!-- Sidebar lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-logo">🔬 SADOC</h2>
+                <p class="sidebar-subtitle">Diagnóstico Forense</p>
+            </div>
+
+            <!-- API Key Input en Sidebar -->
+            <div class="sidebar-api-key">
+                <label for="api-key-input">Gemini API Key</label>
+                <div class="api-key-row">
+                    <input type="password" id="api-key-input" placeholder="AIzaSy...">
+                    <button id="save-api-key" title="Guardar Clave">💾</button>
+                </div>
+                <small id="api-key-status" class="api-key-status" style="display: none;">✓ Guardada</small>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-title">Modos de Análisis</div>
+                <button class="tab-btn active" data-tab="hybrid">🔀 Modo Híbrido</button>
+                <button class="tab-btn" data-tab="text">📝 Análisis de Texto</button>
+                <button class="tab-btn" data-tab="image">🖼️ Análisis Visual</button>
+                <button class="tab-btn" data-tab="search">🔍 Buscador RAG</button>
+                <button class="tab-btn" data-tab="repository" id="repo-tab-btn">📚 Historial / Datos</button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p class="meta-line">Google Gemini 3.5 Flash</p>
+                <p class="meta-line">ISO 14040/14044</p>
+                <p class="meta-line">Norma Europea de Reparabilidad</p>
+            </div>
+        </aside>
+
+        <!-- Contenido principal del Dashboard -->
+        <main class="dashboard-main">
+            <!-- Header del Dashboard -->
+            <header class="dashboard-header">
+                <div class="header-title-area">
+                    <h1>Panel de Diagnóstico Forense de Ciclo de Vida</h1>
+                    <p class="header-desc">Análisis multi-agente en tiempo real & Web Search Grounding</p>
+                </div>
+                <div class="header-agents">
+                    <span class="agent-badge v-badge"><span class="dot"></span> Vision (V)</span>
+                    <span class="agent-badge n-badge"><span class="dot"></span> RAG (N)</span>
+                    <span class="agent-badge c-badge"><span class="dot"></span> Math (C)</span>
+                    <span class="agent-badge a-badge"><span class="dot"></span> Auditor (A)</span>
+                </div>
+            </header>
+
+            <!-- Grid de dos columnas: Izquierda (Inputs) y Derecha (Resultados) -->
+            <div class="dashboard-grid">
+                <!-- Columna Izquierda: Controles de entrada -->
+                <div class="grid-left-col">
+                    <div class="card input-card">
+                        <h3 class="panel-title">Parámetros del Producto</h3>
+
+                        <!-- Tab Content: Híbrido (Activo por defecto) -->
+                        <div class="tab-content active" id="hybrid-tab">
+                            <div class="form-group">
+                                <label for="hybrid-product-name">Nombre del Producto</label>
+                                <input type="text" id="hybrid-product-name" placeholder="Ej: iPhone 15..." class="input-field">
+                            </div>
+                            <div class="form-group">
+                                <label style="margin-bottom: 0.5rem; display: block; font-weight: 500;">Fotografía</label>
+                                <div class="upload-area upload-area-small" id="hybrid-upload-area">
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">📷</span>
+                                        <p>Imagen del producto (opcional)</p>
+                                        <input type="file" id="hybrid-image-input" accept="image/*" hidden>
+                                    </div>
+                                    <div class="preview-container" id="hybrid-preview-container" style="display: none;">
+                                        <img id="hybrid-image-preview" alt="Vista previa">
+                                        <button class="remove-btn" id="hybrid-remove-image">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="hybrid-description">Descripción Adicional (Opcional)</label>
+                                <textarea id="hybrid-description" rows="3" placeholder="Agrega contexto adicional sobre el estado o componentes..." class="textarea-field"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content: Texto -->
+                        <div class="tab-content" id="text-tab">
+                            <div class="form-group">
+                                <label for="product-name">Nombre del Producto</label>
+                                <input type="text" id="product-name" placeholder="Ej: Lavadora Samsung WF45R6100AC" class="input-field">
+                            </div>
+                            <div class="form-group">
+                                <label for="product-description">Descripción Técnica (Opcional)</label>
+                                <textarea id="product-description" rows="5" placeholder="Ej: Motor de inducción, carcasa de acero galvanizado..." class="textarea-field"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content: Imagen -->
+                        <div class="tab-content" id="image-tab">
+                            <label style="margin-bottom: 0.5rem; display: block; font-weight: 500;">Fotografía del Dispositivo</label>
+                            <div class="upload-area" id="upload-area">
+                                <div class="upload-placeholder">
+                                    <span class="upload-icon">📷</span>
+                                    <p>Arrastra una imagen o haz click para seleccionar</p>
+                                    <input type="file" id="image-input" accept="image/*" hidden>
+                                </div>
+                                <div class="preview-container" id="preview-container" style="display: none;">
+                                    <img id="image-preview" alt="Vista previa">
+                                    <button class="remove-btn" id="remove-image">✕</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content: Buscador Científico -->
+                        <div class="tab-content" id="search-tab">
+                            <div class="form-group">
+                                <label for="search-query" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Buscar en Base de Datos Científica</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="search-query" placeholder="Ej: iPhone, Placa, Batería, Cobre..." class="input-field" style="flex: 1; margin-bottom: 0;">
+                                    <button id="search-db-btn" class="btn btn-primary" style="padding: 0 1.5rem; margin-top: 0; min-width: 100px; height: 42px;">Buscar</button>
+                                </div>
+                            </div>
+                            
+                            <div id="search-results-container" style="margin-top: 1.5rem; display: none;">
+                                <h4 class="subsection-title" style="font-size: 1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Coincidencias en ChromaDB</h4>
+                                <div id="search-results-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content: Repositorios -->
+                        <div class="tab-content" id="repository-tab">
+                            <div class="repositories-grid" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="repo-card card" style="padding: 1rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); display: flex; flex-direction: column; gap: 0.8rem;">
+                                    <div>
+                                        <h4 style="font-size: 1em; color: var(--color-text-cyan); margin: 0 0 0.3rem 0;">📚 1. Base Unificada (BOM + iFixit)</h4>
+                                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0; line-height: 1.4;">
+                                            1,888 componentes cruzando masas de laboratorio (Babbitt et al. 2020) y pasos/herramientas de 11,000+ guías de iFixit.
+                                        </p>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button id="download-standard-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.75rem; height: 32px; padding: 0;">📥 JSON</button>
+                                        <button id="download-standard-excel-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.75rem; height: 32px; padding: 0; border-color: #3b82f6; color: #60a5fa;">📊 Excel</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="repo-card card" style="padding: 1rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); display: flex; flex-direction: column; gap: 0.8rem;">
+                                    <div>
+                                        <h4 style="font-size: 1em; color: #10b981; margin: 0 0 0.3rem 0;">🖼️ 2. Repositorio de Ensayos (Historial)</h4>
+                                        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0; line-height: 1.4;">
+                                            Registro histórico de imágenes analizadas, su durabilidad, reparabilidad y huella de carbono estimada.
+                                        </p>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button id="download-trials-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.75rem; height: 32px; padding: 0;">📥 JSON</button>
+                                        <button id="download-trials-excel-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.75rem; height: 32px; padding: 0; border-color: #10b981; color: #34d399;">📊 Excel</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="trials-list-container">
+                                <h4 class="subsection-title" style="font-size: 1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Historial de Ensayos</h4>
+                                <div id="trials-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                                    <p id="no-trials-message" style="text-align: center; color: var(--color-text-muted); padding: 1.5rem 0; font-style: italic; font-size: 0.85rem;">No se han realizado ensayos aún.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón de Acción Principal -->
+                        <div class="action-section" id="analyze-btn-container" style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1.2rem;">
+                            <button id="analyze-btn" class="btn btn-primary" style="width: 100%; height: 46px; font-size: 0.95rem;">
+                                <span class="btn-text">🚀 Iniciar Análisis de Ciclo de Vida</span>
+                                <span class="btn-loader" style="display: none;">
+                                    <span class="spinner"></span> Ejecutando Swarm de Agentes...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Dashboard de Resultados -->
+                <div class="grid-right-col">
+                    <!-- Placeholder Card -->
+                    <div id="results-placeholder" class="card placeholder-card">
+                        <div class="placeholder-content">
+                            <span class="placeholder-icon">📊</span>
+                            <h3>Listo para el Diagnóstico</h3>
+                            <p>Ingresa el nombre del producto, adjunta una foto (opcional) y haz click en **"Iniciar Análisis de Ciclo de Vida"**. Los agentes de Visión, RAG local y Búsqueda Web analizarán el dispositivo en tiempo real.</p>
+                        </div>
+                    </div>
+
+                    <!-- Resultados Técnicos -->
+                    <section class="card results-section animate-fade-in" id="results-section" style="display: none;">
+                        <h2 class="section-title">Resultados del Análisis Técnico</h2>
+
+                        <div class="summary-card">
+                            <div class="summary-header">
+                                <h3 id="product-title">Producto Analizado</h3>
+                                <div class="lifespan-badge">
+                                    <span class="lifespan-label">Vida Útil Estimada</span>
+                                    <span class="lifespan-value" id="lifespan-value">0 años</span>
+                                </div>
+                            </div>
+                            
+                            <!-- KPIs Row -->
+                            <div class="kpi-row">
+                                <div class="kpi-item">
+                                    <span class="kpi-icon">⚙️</span>
+                                    <div class="kpi-info">
+                                        <span class="kpi-label">Índice de Reparabilidad</span>
+                                        <span class="kpi-value" id="kpi-repairability">— / 10</span>
+                                    </div>
+                                </div>
+                                <div class="kpi-item">
+                                    <span class="kpi-icon">🔗</span>
+                                    <div class="kpi-info">
+                                        <span class="kpi-label">Componente Crítico</span>
+                                        <span class="kpi-value kpi-danger" id="weakest-link">—</span>
+                                    </div>
+                                </div>
+                                <div class="kpi-item">
+                                    <span class="kpi-icon">🎯</span>
+                                    <div class="kpi-info">
+                                        <span class="kpi-label">Nivel de Confianza</span>
+                                        <span class="kpi-value" id="kpi-confidence">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Debate Multi-Agente -->
+                            <div class="consensus-box" id="consensus-box">
+                                <span class="consensus-label">⚖️ Debate Multi-Agente (V · N · C · A Agents) & Web Grounding:</span>
+                                <p class="consensus-text" id="consensus-log">-</p>
+                            </div>
+                            
+                            <p class="summary-text" id="summary-text"></p>
+                        </div>
+
+                        <!-- Reparabilidad Premium -->
+                        <div class="reparability-premium-card">
+                            <div class="reparability-header">
+                                <h3>Índice de Reparabilidad del Ecodiseño</h3>
+                                <p class="reparability-explanation" style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0.5rem 0 0 0; line-height: 1.4;">
+                                    ℹ️ Evaluado bajo la <strong>Norma Europea EN 45554</strong>, que mide la facilidad de desensamblaje, herramientas requeridas y piezas de repuesto.
+                                </p>
+                                <div class="reparability-score-circle">
+                                    <span id="reparability-score">0</span>
+                                    <small>/10</small>
+                                </div>
+                            </div>
+                            <div class="reparability-details">
+                                <p id="reparability-label" class="reparability-label">Cargando...</p>
+                                <p id="reparability-math" class="reparability-math"></p>
+                            </div>
+                        </div>
+
+                        <!-- Desglose de Componentes -->
+                        <div class="components-section">
+                            <h3 class="subsection-title">Desglose de Componentes Físicos (BOM)</h3>
+                            <div class="table-container">
+                                <table class="components-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Componente</th>
+                                            <th>Material</th>
+                                            <th>Vida Útil</th>
+                                            <th>Modo de Fallo</th>
+                                            <th>Reparabilidad</th>
+                                            <th>Impacto Amb.</th>
+                                            <th>Normativa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="components-tbody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Fuentes y Verificabilidad -->
+                        <div class="sources-section">
+                            <h3 class="subsection-title">🔍 Verificabilidad y Fuentes Científicas</h3>
+                            <div class="confidence-badge" style="margin-bottom: 1rem; padding: 0.5rem; background: var(--color-bg); border-radius: var(--radius-md); display: inline-flex; gap: 0.5rem; align-items: center; border: 1px solid var(--color-card-border);">
+                                <span class="confidence-label" style="font-weight: 600; font-size: 0.85rem;">Índice de Confianza:</span>
+                                <span class="confidence-value" id="confidence-value" style="font-weight: bold; font-size: 0.85rem;">-</span>
+                            </div>
+                            <ul id="sources-list" class="sources-list" style="margin-top: 0;">
+                            </ul>
+                        </div>
+
+                        <!-- Estrategias de Ecodiseño -->
+                        <div class="recommendations-section">
+                            <h3 class="subsection-title">💡 Recomendaciones de Ecodiseño</h3>
+                            <ul id="recommendations-list" class="recommendations-list">
+                            </ul>
+                        </div>
+
+                        <!-- PDF Export -->
+                        <div class="action-section" style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem;">
+                            <button id="export-pdf-btn" class="btn btn-secondary" style="width: 100%; height: 42px;">
+                                📄 Generar Informe Técnico PDF
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Error Section -->
+                    <section class="card error-section" id="error-section" style="display: none;">
+                        <div class="error-content">
+                            <span class="error-icon">⚠️</span>
+                            <h3>Error en el Análisis</h3>
+                            <p id="error-message"></p>
+                            <button id="retry-btn" class="btn btn-secondary">Reintentar</button>
+                        </div>
+                    </section>
                 </div>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Input Section -->
-            <section class="card input-section">
-                <h2 class="section-title">Análisis de Producto</h2>
-
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="text">📝 Texto</button>
-                    <button class="tab-btn" data-tab="image">🖼️ Imagen</button>
-                    <button class="tab-btn" data-tab="hybrid">🔀 Híbrido</button>
-                    <button class="tab-btn" data-tab="search">🔍 Base de Datos</button>
-                    <button class="tab-btn" data-tab="repository" id="repo-tab-btn">📚 Repositorios</button>
-                </div>
-
-                <!-- Tab Content: Texto -->
-                <div class="tab-content active" id="text-tab">
-                    <div class="form-group">
-                        <label for="product-name">Nombre del Producto</label>
-                        <input type="text" id="product-name" placeholder="Ej: Lavadora Samsung WF45R6100AC"
-                            class="input-field">
-                    </div>
-                    <div class="form-group">
-                        <label for="product-description">Descripción Técnica (Opcional)</label>
-                        <textarea id="product-description" rows="4"
-                            placeholder="Ej: Motor de inducción, carcasa de acero galvanizado, capacidad 18kg..."
-                            class="textarea-field"></textarea>
-                    </div>
-                </div>
-
-                <!-- Tab Content: Imagen -->
-                <div class="tab-content" id="image-tab">
-                    <div class="upload-area" id="upload-area">
-                        <div class="upload-placeholder">
-                            <span class="upload-icon">📷</span>
-                            <p>Arrastra una imagen o haz click para seleccionar</p>
-                            <input type="file" id="image-input" accept="image/*" hidden>
-                        </div>
-                        <div class="preview-container" id="preview-container" style="display: none;">
-                            <img id="image-preview" alt="Vista previa">
-                            <button class="remove-btn" id="remove-image">✕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab Content: Híbrido -->
-                <div class="tab-content" id="hybrid-tab">
-                    <div class="form-group">
-                        <label for="hybrid-product-name">Nombre del Producto</label>
-                        <input type="text" id="hybrid-product-name" placeholder="Ej: Lavadora Samsung WF45R6100AC"
-                            class="input-field">
-                    </div>
-                    <div class="upload-area upload-area-small" id="hybrid-upload-area">
-                        <div class="upload-placeholder">
-                            <span class="upload-icon">📷</span>
-                            <p>Imagen del producto (opcional)</p>
-                            <input type="file" id="hybrid-image-input" accept="image/*" hidden>
-                        </div>
-                        <div class="preview-container" id="hybrid-preview-container" style="display: none;">
-                            <img id="hybrid-image-preview" alt="Vista previa">
-                            <button class="remove-btn" id="hybrid-remove-image">✕</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="hybrid-description">Descripción Adicional (Opcional)</label>
-                        <textarea id="hybrid-description" rows="3" placeholder="Agrega contexto adicional..."
-                            class="textarea-field"></textarea>
-                    </div>
-                </div>
-
-                <!-- Tab Content: Buscador Científico -->
-                <div class="tab-content" id="search-tab">
-                    <div class="form-group">
-                        <label for="search-query" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Buscar Componente o Producto Científico</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="text" id="search-query" placeholder="Ej: iPhone, Laptop, Batería, Cobre, Lithium..." class="input-field" style="flex: 1; margin-bottom: 0;">
-                            <button id="search-db-btn" class="btn btn-primary" style="padding: 0 1.5rem; margin-top: 0; min-width: 120px; height: 42px;">🔍 Buscar</button>
-                        </div>
-                    </div>
-                    
-                    <div id="search-results-container" style="margin-top: 1.5rem; display: none;">
-                        <h3 class="subsection-title" style="font-size: 1.1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Resultados en Base de Datos (Babbitt et al. & iFixit)</h3>
-                        <div id="search-results-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab Content: Repositorios Científicos y Ensayos -->
-                <div class="tab-content" id="repository-tab">
-                    <div class="repositories-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                        <div class="repo-card card" style="padding: 1.2rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <h3 style="font-size: 1.1em; color: var(--accent-color); margin-top: 0; margin-bottom: 0.5rem;">📚 1. Repositorio Estándar (BOM + iFixit)</h3>
-                                <p style="font-size: 0.85em; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-                                    Base de datos unificada de 1,888 componentes cruzando las masas de laboratorio (Babbitt et al. 2020) y los pasos de desmontaje/herramientas de 11,000+ guías de iFixit.
-                                </p>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: auto;">
-                                <button id="download-standard-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.85em; height: 38px; padding: 0;">📥 Descargar (JSON)</button>
-                                <button id="download-standard-excel-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.85em; height: 38px; padding: 0; border-color: #3b82f6; color: #60a5fa;">📊 Descargar (Excel)</button>
-                            </div>
-                        </div>
-                        
-                        <div class="repo-card card" style="padding: 1.2rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <h3 style="font-size: 1.1em; color: #10b981; margin-top: 0; margin-bottom: 0.5rem;">🖼️ 2. Repositorio de Ensayos (Fotos de la Red)</h3>
-                                <p style="font-size: 0.85em; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-                                    Registro histórico de imágenes analizadas y clasificadas mediante el sistema multi-agente, detallando su durabilidad, índice de reparabilidad y huella de carbono.
-                                </p>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: auto;">
-                                <button id="download-trials-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.85em; height: 38px; padding: 0;">📥 Descargar (JSON)</button>
-                                <button id="download-trials-excel-btn" class="btn btn-secondary" style="flex: 1; font-size: 0.85em; height: 38px; padding: 0; border-color: #10b981; color: #34d399;">📊 Descargar (Excel)</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="trials-list-container">
-                        <h3 class="subsection-title" style="font-size: 1.1em; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;">Historial de Ensayos / Fotos Clasificadas</h3>
-                        <div id="trials-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 380px; overflow-y: auto; padding-right: 0.5rem;">
-                            <p id="no-trials-message" style="text-align: center; color: var(--text-secondary); padding: 2rem 0; font-style: italic;">No se han realizado ensayos aún. Analiza un producto para registrar la primera clasificación.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botón de Análisis -->
-                <div class="action-section">
-                    <button id="analyze-btn" class="btn btn-primary">
-                        <span class="btn-text">🚀 Analizar Producto</span>
-                        <span class="btn-loader" style="display: none;">
-                            <span class="spinner"></span> Analizando...
-                        </span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Results Section -->
-            <section class="card results-section" id="results-section" style="display: none;">
-                <h2 class="section-title">Resultados del Análisis Técnico</h2>
-
-                <div class="summary-card">
-                    <div class="summary-header">
-                        <h3 id="product-title">Producto Analizado</h3>
-                        <div class="lifespan-badge">
-                            <span class="lifespan-label">Vida Útil Estimada</span>
-                            <span class="lifespan-value" id="lifespan-value">0 años</span>
-                        </div>
-                    </div>
-                    
-                    <!-- KPIs Row -->
-                    <div class="kpi-row">
-                        <div class="kpi-item">
-                            <span class="kpi-icon">⚙️</span>
-                            <div class="kpi-info">
-                                <span class="kpi-label">Índice de Reparabilidad</span>
-                                <span class="kpi-value" id="kpi-repairability">— / 10</span>
-                            </div>
-                        </div>
-                        <div class="kpi-item">
-                            <span class="kpi-icon">🔗</span>
-                            <div class="kpi-info">
-                                <span class="kpi-label">Componente Crítico</span>
-                                <span class="kpi-value kpi-danger" id="weakest-link">—</span>
-                            </div>
-                        </div>
-                        <div class="kpi-item">
-                            <span class="kpi-icon">🎯</span>
-                            <div class="kpi-info">
-                                <span class="kpi-label">Nivel de Confianza</span>
-                                <span class="kpi-value" id="kpi-confidence">—</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Debate Multi-Agente -->
-                    <div class="consensus-box" id="consensus-box">
-                        <span class="consensus-label">⚖️ Debate Multi-Agente (V · N · C · A Agents):</span>
-                        <p class="consensus-text" id="consensus-log">-</p>
-                    </div>
-                    
-                    <p class="summary-text" id="summary-text"></p>
-                </div>
-
-                <div class="reparability-premium-card">
-                    <div class="reparability-header">
-                        <h3>Índice de Reparabilidad</h3>
-                        <p class="reparability-explanation" style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0.5rem 0 0 0; line-height: 1.4;">
-                            ℹ️ Evaluado según la <strong>Norma Europea EN 45554</strong> para el ecodiseño, la cual puntúa la facilidad de desensamblaje, herramientas requeridas y disponibilidad de piezas de repuesto.
-                        </p>
-                        <div class="reparability-score-circle">
-                            <span id="reparability-score">0</span>
-                            <small>/10</small>
-                        </div>
-                    </div>
-                    <div class="reparability-details">
-                        <p id="reparability-label" class="reparability-label">Cargando...</p>
-                        <p id="reparability-math" class="reparability-math"></p>
-                    </div>
-                </div>
-
-                <div class="components-section">
-                    <h3 class="subsection-title">Desglose de Componentes</h3>
-                    <div class="table-container">
-                        <table class="components-table">
-                            <thead>
-                                <tr>
-                                    <th>Componente</th>
-                                    <th>Material</th>
-                                    <th>Vida Útil</th>
-                                    <th>Modo de Fallo</th>
-                                    <th>Reparabilidad</th>
-                                    <th>Impacto Amb.</th>
-                                    <th>Normativa</th>
-                                </tr>
-                            </thead>
-                            <tbody id="components-tbody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
-                <div class="sources-section">
-                    <h3 class="subsection-title">🔍 Verificabilidad y Fuentes</h3>
-                    <div class="confidence-badge" style="margin-bottom: 1rem; padding: 0.5rem; background: var(--surface-color); border-radius: var(--border-radius); display: inline-flex; gap: 0.5rem; align-items: center;">
-                        <span class="confidence-label" style="font-weight: 600;">Índice de Confianza:</span>
-                        <span class="confidence-value" id="confidence-value" style="font-weight: bold;">-</span>
-                    </div>
-                    <ul id="sources-list" class="sources-list" style="margin-top: 0;">
-                    </ul>
-                </div>
-
-                <div class="recommendations-section">
-                    <h3 class="subsection-title">💡 Estrategias de Ecodiseño</h3>
-                    <ul id="recommendations-list" class="recommendations-list">
-                    </ul>
-                </div>
-
-                <div class="action-section">
-                    <button id="export-pdf-btn" class="btn btn-secondary">
-                        📄 Generar Informe Técnico PDF
-                    </button>
-                </div>
-            </section>
-
-            <!-- Error Section -->
-            <section class="card error-section" id="error-section" style="display: none;">
-                <div class="error-content">
-                    <span class="error-icon">⚠️</span>
-                    <h3>Error en el Análisis</h3>
-                    <p id="error-message"></p>
-                    <button id="retry-btn" class="btn btn-secondary">Reintentar</button>
-                </div>
-            </section>
         </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="footer-content">
-                <p>🔬 <strong>SADOC</strong> — Sistema Multi-Agente para el Diagnóstico de Obsolescencia y Ciclo de Vida</p>
-                <p class="footer-meta">Powered by <strong>Google Gemini 3.5 Flash</strong> · ISO 14040/14044 · Norma Europea de Reparabilidad</p>
-            </div>
-        </footer>
+    </div>
     </div>
 
     <!-- Scripts -->

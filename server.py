@@ -14,6 +14,9 @@ import google.generativeai as genai
 import chromadb
 from sentence_transformers import SentenceTransformer
 import pandas as pd
+import urllib.request
+import urllib.parse
+from bs4 import BeautifulSoup
 
 app = FastAPI(title="SADOC - Sistema de Agentes para el Diagnóstico de Obsolescencia y Ciclo de Vida", version="4.0")
 
@@ -82,6 +85,38 @@ def save_to_history(analysis: dict, image_data: Optional[str] = None):
     except Exception as e:
         print(f"⚠️ Error guardando historial: {e}")
 
+def search_web_ddg(query: str, max_results: int = 5) -> list:
+    print(f"🔍 [Search Agent] Buscando en la web: '{query}'...")
+    try:
+        url = 'https://lite.duckduckgo.com/lite/'
+        data = urllib.parse.urlencode({'q': query}).encode('utf-8')
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        )
+        with urllib.request.urlopen(req, timeout=8) as r:
+            html = r.read()
+        soup = BeautifulSoup(html, 'html.parser')
+        links = soup.find_all('a', class_='result-link')
+        snippets = soup.find_all('td', class_='result-snippet')
+        
+        results = []
+        for i in range(min(len(links), len(snippets), max_results)):
+            results.append({
+                "title": links[i].get_text(strip=True),
+                "url": links[i].get("href", ""),
+                "snippet": snippets[i].get_text(strip=True)
+            })
+        print(f"✅ [Search Agent] Encontrados {len(results)} resultados de DuckDuckGo.")
+        return results
+    except Exception as e:
+        print(f"⚠️ [Search Agent] Error en búsqueda DDG: {e}")
+        return []
+
 # Inicializar modelo de embeddings para ChromaDB
 print("🧠 Cargando modelo de embeddings para RAG local...")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -120,14 +155,21 @@ def run_v_agent(product_name: str, description: str, mime_type: str, image_bytes
     model = genai.GenerativeModel('gemini-3.5-flash')
     
     prompt = """
-    Analiza la imagen de este producto e identifica los componentes físicos visibles.
+    Analiza la imagen de este producto. Tu primera tarea es identificar la marca, el modelo específico (ej: iPhone 15, Nintendo Switch OLED, MacBook Pro M3, etc.) y la categoría general (ej: Smartphone, Consola de videojuegos, Laptop, Audífonos, etc.) de la manera más específica posible. Si ves un modelo conocido, indícalo detalladamente en lugar de usar un término genérico.
+    
+    Tu segunda tarea es identificar los componentes físicos visibles de este producto.
     Para cada componente detectado, especifica:
-    1. Nombre del componente (ej: Pantalla, Carcasa frontal, Botones, Conector).
-    2. Material estimado (ej: Plástico ABS, Vidrio de borosilicato, Aluminio, Cobre).
-    3. Tipo de fijación/ensamblaje estimado (ej: Adhesivo, Tornillos de estrella, Clips de presión, Soldadura).
+    1. Nombre del componente (ej: Pantalla de cristal, Carcasa trasera de titanio, Módulo de cámara, Conector USB-C, Batería, etc.).
+    2. Material estimado (ej: Titanio, Vidrio Ceramic Shield, Plástico ABS, Cobre, Aluminio).
+    3. Tipo de fijación/ensamblaje estimado (ej: Adhesivo, Tornillos Pentalobe, Clips de presión, Soldadura).
     
     Devuelve la información estrictamente en un formato JSON plano como el siguiente:
     {
+      "detected_product": {
+        "brand": "Marca identificada (ej: Apple, Sony)",
+        "model": "Modelo específico (ej: iPhone 15 Pro, WH-1000XM4)",
+        "category": "Categoría (ej: Smartphone, Audífonos)"
+      },
       "visual_components": [
         {
           "name": "Nombre",
@@ -153,11 +195,11 @@ def run_v_agent(product_name: str, description: str, mime_type: str, image_bytes
             text = text.replace("```", "", 1).replace("```", "", 1).strip()
             
         result = json.loads(text)
-        print(f"✅ [V-Agent] Componentes visuales extraídos: {len(result.get('visual_components', []))}")
+        print(f"✅ [V-Agent] Componentes visuales extraídos: {len(result.get('visual_components', []))} | Detectado: {result.get('detected_product', {})}")
         return result
     except Exception as e:
         print(f"⚠️ [V-Agent] Error en análisis de visión: {e}. Continuando con análisis vacío.")
-        return {"visual_components": []}
+        return {"visual_components": [], "detected_product": None}
 
 
 # 2. N-Agent (Normative & RAG Analyst)
@@ -385,8 +427,7 @@ def run_c_agent(visual_data: dict, rag_data: dict) -> dict:
     }
 
 
-# 4. A-Agent (Adversarial Auditor & Consensus)
-def run_a_agent(product_name: str, description: str, visual_data: dict, rag_data: dict, math_data: dict, api_key: str) -> dict:
+def run_a_agent(product_name: str, description: str, visual_data: dict, rag_data: dict, math_data: dict, api_key: str, web_search_data: Optional[list] = None) -> dict:
     print("🤖 [A-Agent] Ejecutando debate de consenso, auditoría adversaria y formateando JSON...")
     genai.configure(api_key=api_key)
 
@@ -411,15 +452,18 @@ BLACKBOARD DE AGENTES:
 - V-Agent (Visual): {json.dumps(visual_data, ensure_ascii=False)}
 - N-Agent (RAG Babbitt et al. 2020): {json.dumps(rag_data, ensure_ascii=False)}
 - C-Agent (Calculos AHP + CO2): {json.dumps(math_data, ensure_ascii=False)}
+- Web Search Data (Especificaciones en tiempo real de Internet): {json.dumps(web_search_data, ensure_ascii=False) if web_search_data else '[]'}
 
 REGLAS DE CONSENSO:
-- Usa los datos de masa del RAG (Babbitt 2020) como fuente primaria (peso 0.5).
+- Reconcilia los datos locales (RAG Babbitt) con los datos en tiempo real de Internet (Web Search). Si hay información específica de internet sobre el modelo (ej: iPhone 15 tiene chasis de aluminio aeroespacial/vidrio infusado, pantalla Ceramic Shield, puerto USB-C, y batería de ~3349 mAh), priorízala sobre los datos genéricos del RAG Babbitt (que provienen de bases de datos de laboratorios de modelos antiguos de los años 90 o 2000).
 - Usa lo detectado por V-Agent para contexto de ensamblaje (peso 0.3).
 - La descripcion del usuario aporta contexto adicional (peso 0.2).
 - La vida util total = minimo lifespanYears de componentes donde isCritical=true Y repairabilityScore < 5.
 - Si todos los criticos son reparables (score >= 5), usa la media o segundo minimo.
 - La huella de carbono total del C-Agent es: {carbon_total_kg} kg CO2-eq.
 - Responde en español (tildes y caracteres especiales incluidos).
+- Asegúrate de listar los componentes específicos del producto real (ej: si es un iPhone 15, incluye chasis de aluminio/vidrio, pantalla de vidrio Ceramic Shield, puerto de carga USB-C, placa lógica, batería de litio, etc.) con sus vidas útiles y pesos realistas de acuerdo con los datos encontrados en la búsqueda web y RAG.
+- Incluye en la sección 'sources' del JSON de salida tanto el RAG local como las páginas o referencias clave encontradas en la búsqueda web (Web Search Data).
 
 DEVUELVE UNICAMENTE JSON PURO. Sin markdown, sin explicaciones, sin comentarios dentro del JSON.
 El JSON debe empezar con {{ y terminar con }}.
@@ -430,13 +474,13 @@ IMPORTANTE SOBRE reparabilityIndex:
 - Los repairabilityScore de cada componente son valores INDIVIDUALES por componente, no el índice global.
 
 {{
-  "productName": "Nombre oficial del producto",
+  "productName": "Nombre oficial del producto (especifica marca y modelo completo si se detectó)",
   "estimatedLifespan": 0,
   "weakestLink": "Nombre del componente critico que falla primero",
   "carbonFootprint": "{carbon_str}",
   "confidenceScore": "Alto",
-  "summary": "Parrafo tecnico de 3-4 oraciones: ciclo de vida, vida util y huella de carbono.",
-  "consensusLog": "2-3 oraciones del debate V/N/C-Agent.",
+  "summary": "Parrafo tecnico de 3-4 oraciones: ciclo de vida, vida util y huella de carbono, mencionando explícitamente el modelo real analizado.",
+  "consensusLog": "2-3 oraciones del debate V/N/C-Agent y los hallazgos de búsqueda web.",
   "reparabilityIndex": {{
     "score": {rep_score},
     "label": "{rep_label}",
@@ -505,29 +549,50 @@ async def analyze_product(request: AnalysisRequest, x_gemini_api_key: Optional[s
         raise HTTPException(status_code=400, detail="Gemini API Key faltante. Por favor configúrala en el cliente o como variable de entorno (GEMINI_API_KEY) en el servidor.")
         
     print("\n--- ⚡ INICIANDO FLUJO DE ANÁLISIS MULTI-AGENTE (SADOC) ---")
-    print(f"Producto: {request.productName}")
+    print(f"Producto recibido del cliente: {request.productName}")
     
     # 1. Ejecutar V-Agent (Vision) si hay imagen
-    visual_data = {"visual_components": []}
+    visual_data = {"visual_components": [], "detected_product": None}
+    product_name_to_use = request.productName
+    
     if request.imageData:
         mime_type, image_bytes = parse_base64_image(request.imageData)
         if mime_type and image_bytes:
             visual_data = run_v_agent(request.productName, request.description, mime_type, image_bytes, api_key)
             
+            # Autocompletar término genérico con modelo detectado por visión
+            det = visual_data.get("detected_product")
+            if det and det.get("model"):
+                detected_name = f"{det.get('brand', '')} {det.get('model', '')}".strip()
+                is_generic = not product_name_to_use or product_name_to_use.lower() in [
+                    "telefono", "teléfono", "celular", "movil", "móvil", "laptop", "computadora", "pc", 
+                    "dispositivo", "producto", "electronic", "electrónico", "objeto", "foto", "imagen"
+                ]
+                if is_generic:
+                    print(f"🔍 [V-Agent] Sobrescribiendo término genérico '{product_name_to_use}' por modelo detectado: '{detected_name}'")
+                    product_name_to_use = detected_name
+
+    # 1.5. Ejecutar Agente de Búsqueda Web ( DuckDuckGo Real-time )
+    web_search_data = []
+    if product_name_to_use and product_name_to_use.lower() not in ["desconocido", "producto genérico", "dispositivo", "objeto"]:
+        search_query = f"{product_name_to_use} materials lifespan carbon footprint repairability"
+        web_search_data = search_web_ddg(search_query, max_results=4)
+            
     # 2. Ejecutar N-Agent (RAG local con ChromaDB)
-    rag_data = run_n_agent(request.productName, request.description, visual_data)
+    rag_data = run_n_agent(product_name_to_use, request.description, visual_data)
     
     # 3. Ejecutar C-Agent (Cálculo cuantitativo)
     math_data = run_c_agent(visual_data, rag_data)
     
     # 4. Ejecutar A-Agent (Auditor adversario y Síntesis)
     final_analysis = run_a_agent(
-        product_name=request.productName,
+        product_name=product_name_to_use,
         description=request.description,
         visual_data=visual_data,
         rag_data=rag_data,
         math_data=math_data,
-        api_key=api_key
+        api_key=api_key,
+        web_search_data=web_search_data
     )
 
     # ── Guardar el score AHP del C-Agent en el resultado final

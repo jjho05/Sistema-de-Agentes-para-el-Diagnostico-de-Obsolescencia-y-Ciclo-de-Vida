@@ -23,6 +23,9 @@ export function renderResults(analysis) {
     // Guardar en historial (función síncrona — no devuelve Promise)
     try { saveAnalysis(analysis); } catch (err) { console.warn('[SADOC] No se pudo guardar:', err); }
 
+    const placeholder = document.getElementById('results-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+
     const resultsSection = document.getElementById('results-section');
     toggleElement(resultsSection, true);
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
