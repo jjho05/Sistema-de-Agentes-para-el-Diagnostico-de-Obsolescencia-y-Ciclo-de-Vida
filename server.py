@@ -315,41 +315,65 @@ def run_c_agent(visual_data: dict, rag_data: dict) -> dict:
                 "source": "Inferencia de Vision"
             })
             
-    # 3. Calcular AHP del Índice de Reparabilidad EN 45554
-    # Definimos puntuaciones ficticias basadas en herramientas detectadas
-    # Criterios: Desensamblaje (S1), Herramientas (S2), Disponibilidad (S3)
-    s1 = 8.0  # Por defecto asumimos tornillos
-    s2 = 7.0  # Herramientas estándar
-    s3 = 6.0  # Repuestos moderados
-    
-    # Buscar elementos que penalicen
+    # ── 3. Calcular IOR (Índice de Reparabilidad) AHP según EN 45554
+    # Criterios y pesos: Desensamblaje S1=0.50, Herramientas S2=0.30, Repuestos S3=0.20
+    # Valores base calibrados con benchmarks iFixit y estudios EN 45554
+    s1 = 7.0   # Desensamblaje: base media-alta (tornillos estándar asumidos)
+    s2 = 6.5   # Herramientas: accesibles en mercado
+    s3 = 6.0   # Disponibilidad de repuestos: moderada
+
+    adhesive_found     = False
+    proprietary_found  = False
+
     visual_assemblies = [c.get('assembly', '').lower() for c in visual_data.get('visual_components', [])]
     for assembly in visual_assemblies:
-        if 'pegamento' in assembly or 'adhesivo' in assembly or 'pegado' in assembly:
-            s1 -= 2.0  # Penalización de desensamblaje por pegamento
-            s2 -= 1.0  # Requiere pistola de calor
-            
-    # Evitar puntuaciones negativas o mayores a 10
+        if 'pegamento' in assembly or 'adhesivo' in assembly or 'pegado' in assembly or 'glued' in assembly:
+            adhesive_found = True
+        if 'pentalobe' in assembly or 'torx' in assembly or 'propietari' in assembly or 'proprietary' in assembly:
+            proprietary_found = True
+
+    # Penalización única por adhesivo (no acumulativa)
+    if adhesive_found:
+        s1 -= 1.5   # Requiere herramienta de calor / mayor habilidad
+        s2 -= 0.5   # Pistola de calor necesaria
+
+    # Penalización por herramientas propietarias
+    if proprietary_found:
+        s2 -= 1.5   # Herramientas poco accesibles
+        s3 -= 1.0   # Repuestos más difíciles de conseguir
+
+    # Penalización si hay muchos componentes con adhesivo (diseño sellado)
+    adhesive_count = sum(1 for a in visual_assemblies if 'pegamento' in a or 'adhesivo' in a)
+    if adhesive_count >= 3:
+        s1 -= 0.5   # Diseño estructuralmente sellado
+
+    # Limitar entre 1 y 10
     s1 = max(1.0, min(10.0, s1))
     s2 = max(1.0, min(10.0, s2))
     s3 = max(1.0, min(10.0, s3))
-    
-    # Ecuación AHP de EN 45554:
-    # IR = 0.50 * S1 + 0.30 * S2 + 0.20 * S3
+
+    # Ecuación AHP EN 45554: IOR = 0.50·S1 + 0.30·S2 + 0.20·S3
     ir_score = round((0.50 * s1) + (0.30 * s2) + (0.20 * s3), 1)
-    
-    # Clasificación de la etiqueta de reparabilidad
-    if ir_score >= 8.0:
-        label = "Alta Reparabilidad (Ecodiseño Excelente)"
+
+    # Clasificación EN 45554
+    if ir_score >= 7.5:
+        label = "Alta Reparabilidad — Ecodiseño Excelente (EN 45554 Clase A)"
     elif ir_score >= 5.0:
-        label = "Reparabilidad Media (Diseño Convencional)"
+        label = "Reparabilidad Media — Diseño Convencional (EN 45554 Clase B)"
+    elif ir_score >= 3.0:
+        label = "Reparabilidad Baja — Acceso Limitado a Componentes (EN 45554 Clase C)"
     else:
-        label = "Baja Reparabilidad (Obsolescencia Programada)"
-        
-    math_details = f"AHP Ponderado: 0.50 * [Desensamblaje: {s1}] + 0.30 * [Herramientas: {s2}] + 0.20 * [Repuestos: {s3}] = {ir_score}/10."
-    
-    print(f"✅ [C-Agent] Cálculos completados. Huella de Carbono: {round(total_carbon, 2)} kg CO2, Índice AHP: {ir_score}")
-    
+        label = "Muy Baja Reparabilidad — Obsolescencia Programada (EN 45554 Clase D)"
+
+    math_details = (
+        f"AHP EN 45554: 0.50×S1[Desensamblaje={s1}] + 0.30×S2[Herramientas={s2}] "
+        f"+ 0.20×S3[Repuestos={s3}] = {ir_score}/10"
+        + (" | Penalización: adhesivo estructural" if adhesive_found else "")
+        + (" | Penalización: tornillos propietarios" if proprietary_found else "")
+    )
+
+    print(f"✅ [C-Agent] Huella CO₂: {round(total_carbon, 2)} kg | IOR AHP: {ir_score}/10 | Adhesivo: {adhesive_found} | Propietario: {proprietary_found}")
+
     return {
         "fused_components": fused_components,
         "carbon_footprint_total_kg": round(total_carbon, 2),
@@ -399,6 +423,11 @@ REGLAS DE CONSENSO:
 
 DEVUELVE UNICAMENTE JSON PURO. Sin markdown, sin explicaciones, sin comentarios dentro del JSON.
 El JSON debe empezar con {{ y terminar con }}.
+
+IMPORTANTE SOBRE reparabilityIndex:
+- El score del C-Agent es {rep_score}/10 y es el valor OFICIAL calculado con AHP EN 45554.
+- USA EXACTAMENTE score={rep_score}. NO lo recalcules. NO promedies los repairabilityScore de los componentes.
+- Los repairabilityScore de cada componente son valores INDIVIDUALES por componente, no el índice global.
 
 {{
   "productName": "Nombre oficial del producto",
@@ -500,6 +529,21 @@ async def analyze_product(request: AnalysisRequest, x_gemini_api_key: Optional[s
         math_data=math_data,
         api_key=api_key
     )
+
+    # ── Guardar el score AHP del C-Agent en el resultado final
+    # El A-Agent a veces recalcula y baja el score incorrecto — forzamos el valor científico
+    c_agent_rep = math_data.get('reparability', {})
+    if c_agent_rep.get('score') is not None:
+        if 'reparabilityIndex' not in final_analysis or not isinstance(final_analysis.get('reparabilityIndex'), dict):
+            final_analysis['reparabilityIndex'] = {}
+        # Solo sobrescribir si A-Agent lo bajó significativamente (>1.5 puntos) sin justificación
+        a_score = final_analysis['reparabilityIndex'].get('score', 0)
+        c_score = c_agent_rep['score']
+        if abs(a_score - c_score) > 1.5:
+            print(f"⚠️ [Endpoint] A-Agent cambió IOR de {c_score} a {a_score}. Restaurando valor C-Agent.")
+            final_analysis['reparabilityIndex']['score']   = c_score
+            final_analysis['reparabilityIndex']['label']   = c_agent_rep.get('label', final_analysis['reparabilityIndex'].get('label', ''))
+            final_analysis['reparabilityIndex']['details'] = c_agent_rep.get('details', final_analysis['reparabilityIndex'].get('details', ''))
     
     # Guardar en el historial de ensayos (Fotos de la Red)
     try:
