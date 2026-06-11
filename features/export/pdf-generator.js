@@ -27,11 +27,11 @@ export async function generatePDF(analysis) {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('🔬 Análisis Forense de Producto', margin, 20);
+    doc.text('Análisis de Ciclo de Vida y Ecodiseño', margin, 20);
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('SADOC • Diagnóstico de Obsolescencia y Ciclo de Vida', margin, 30);
+    doc.text('SADOC • Análisis de Ciclo de Vida y Ecodiseño', margin, 30);
 
     yPosition = 50;
 

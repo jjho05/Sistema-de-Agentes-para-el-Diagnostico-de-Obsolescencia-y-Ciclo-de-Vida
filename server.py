@@ -443,7 +443,7 @@ def run_a_agent(product_name: str, description: str, visual_data: dict, rag_data
     carbon_str      = f"{carbon_total_kg:.1f} kg CO\u2082-eq (estimado ISO 14067)"
 
     debate_prompt = f"""
-Eres el A-Agent (Agente Auditor Adversario) del sistema SADOC. Reconcilia los datos de los agentes V, N y C para generar un analisis forense tecnico de ciclo de vida y durabilidad de un producto electronico.
+Eres el A-Agent (Agente Auditor Adversario) del sistema SADOC. Reconcilia los datos de los agentes V, N y C para generar un análisis técnico de ciclo de vida, ecodiseño y durabilidad de un producto electrónico.
 
 PRODUCTO: {product_name}
 DESCRIPCION ADICIONAL: {description}
